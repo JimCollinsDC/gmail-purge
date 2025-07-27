@@ -110,13 +110,16 @@ This document contains general coding standards and architectural guidelines for
 - Test error handling scenarios
 - Maintain > 80% code coverage
 - **Recommended Testing Stack:**
-  - **Jest**: Primary testing framework for JavaScript
-  - **Testing Library**: For DOM testing (if applicable)
-  - **Sinon**: For mocking and stubbing
-  - **Istanbul/nyc**: For code coverage reporting
+  - **Vitest**: Modern, fast testing framework (Jest alternative without warnings)
+  - **@vitest/ui**: Beautiful web UI for tests (optional)
+  - **jsdom**: For DOM testing in Node.js environment
+  - **Testing Library**: For DOM testing (if needed for complex UI)
+  - **Sinon**: For mocking and stubbing (if advanced mocking needed)
 - **Unit Test Structure:**
   ```javascript
-  // Example test structure
+  // Example test structure with Vitest
+  import { describe, it, expect, vi, beforeEach } from 'vitest';
+  
   describe('ComponentName', () => {
     beforeEach(() => {
       // Setup code
@@ -143,31 +146,41 @@ This document contains general coding standards and architectural guidelines for
   ```json
   {
     "scripts": {
-      "test": "jest",
-      "test:watch": "jest --watch",
-      "test:coverage": "jest --coverage",
-      "test:ci": "jest --ci --coverage --watchAll=false"
+      "test": "vitest",
+      "test:ui": "vitest --ui",
+      "test:run": "vitest run",
+      "test:coverage": "vitest run --coverage"
     }
   }
   ```
-- **Jest Configuration** (jest.config.js or package.json):
+- **Vitest Configuration** (vitest.config.js):
   ```javascript
-  module.exports = {
-    testEnvironment: 'jsdom', // For browser-based code
-    collectCoverageFrom: [
-      'js/**/*.js',
-      '!js/**/*.test.js',
-      '!**/node_modules/**'
-    ],
-    coverageThreshold: {
-      global: {
-        branches: 80,
-        functions: 80,
-        lines: 80,
-        statements: 80
+  import { defineConfig } from 'vitest/config';
+
+  export default defineConfig({
+    test: {
+      environment: 'jsdom', // For browser-based code
+      globals: true, // Enable global test functions
+      setupFiles: ['./tests/setup.js'], // Global setup
+      coverage: {
+        reporter: ['text', 'html', 'lcov'],
+        exclude: [
+          'node_modules/',
+          'tests/',
+          '**/*.test.js',
+          'coverage/',
+        ],
+        thresholds: {
+          global: {
+            branches: 80,
+            functions: 80,
+            lines: 80,
+            statements: 80
+          }
+        }
       }
     }
-  };
+  });
   ```
 
 ### Integration Tests
@@ -432,10 +445,10 @@ Ensure your `package.json` includes these essential testing scripts:
 ```json
 {
   "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "test:ci": "jest --ci --coverage --watchAll=false",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "lint": "eslint js/",
     "lint:fix": "eslint js/ --fix",
     "format": "prettier --write js/"

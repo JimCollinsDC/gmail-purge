@@ -1,68 +1,68 @@
 /**
- * Jest Test Setup
- * Global test configuration and mocks
+ * Vitest Test Setup
+ * Global test configuration and mocks - lightweight and fast
  */
 
 // Mock DOM APIs that might not be available in JSDOM
 Object.defineProperty(window, 'localStorage', {
   value: {
-    getItem: jest.fn(),
-    setItem: jest.fn(),
-    removeItem: jest.fn(),
-    clear: jest.fn(),
+    getItem: vi.fn(),
+    setItem: vi.fn(),
+    removeItem: vi.fn(),
+    clear: vi.fn(),
   },
   writable: true,
 });
 
 Object.defineProperty(window, 'sessionStorage', {
   value: {
-    getItem: jest.fn(),
-    setItem: jest.fn(),
-    removeItem: jest.fn(),
-    clear: jest.fn(),
+    getItem: vi.fn(),
+    setItem: vi.fn(),
+    removeItem: vi.fn(),
+    clear: vi.fn(),
   },
   writable: true,
 });
 
 // Mock Google APIs
 global.gapi = {
-  load: jest.fn((api, callback) => {
+  load: vi.fn((api, callback) => {
     if (typeof callback === 'function') {
       callback();
     }
   }),
   auth2: {
-    getAuthInstance: jest.fn(() => ({
+    getAuthInstance: vi.fn(() => ({
       isSignedIn: {
-        get: jest.fn(() => false),
-        listen: jest.fn(),
+        get: vi.fn(() => false),
+        listen: vi.fn(),
       },
-      signIn: jest.fn(() => Promise.resolve()),
-      signOut: jest.fn(() => Promise.resolve()),
+      signIn: vi.fn(() => Promise.resolve()),
+      signOut: vi.fn(() => Promise.resolve()),
       currentUser: {
-        get: jest.fn(() => ({
-          getBasicProfile: jest.fn(() => ({
-            getName: jest.fn(() => 'Test User'),
-            getEmail: jest.fn(() => 'test@example.com'),
-            getImageUrl: jest.fn(() => 'https://example.com/avatar.jpg'),
+        get: vi.fn(() => ({
+          getBasicProfile: vi.fn(() => ({
+            getName: vi.fn(() => 'Test User'),
+            getEmail: vi.fn(() => 'test@example.com'),
+            getImageUrl: vi.fn(() => 'https://example.com/avatar.jpg'),
           })),
         })),
       },
     })),
-    init: jest.fn(() => Promise.resolve()),
+    init: vi.fn(() => Promise.resolve()),
   },
   client: {
-    init: jest.fn(() => Promise.resolve()),
+    init: vi.fn(() => Promise.resolve()),
     gmail: {
       users: {
         messages: {
-          list: jest.fn(() => Promise.resolve({
+          list: vi.fn(() => Promise.resolve({
             result: {
               messages: [],
               nextPageToken: null,
             },
           })),
-          get: jest.fn(() => Promise.resolve({
+          get: vi.fn(() => Promise.resolve({
             result: {
               id: 'test-id',
               threadId: 'test-thread',
@@ -89,17 +89,14 @@ global.gapi = {
 // Mock console methods to reduce noise in tests
 global.console = {
   ...console,
-  log: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
+  log: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
 };
-
-// Set up global test timeout
-jest.setTimeout(10000);
 
 // Clean up after each test
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
   localStorage.clear();
   sessionStorage.clear();
 });
