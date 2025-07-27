@@ -1,18 +1,21 @@
-*THIS DOCUMENT WAS GENERATED WITH COPILOT AGENT*
+_THIS DOCUMENT WAS GENERATED WITH COPILOT AGENT_
 
 # JavaScript Coding Standards for GitHub Copilot
 
 ## Project Overview
+
 This document contains general coding standards and architectural guidelines for JavaScript projects. Project-specific requirements and implementation details should be documented in separate files.
 
 ## Coding Standards
 
 ### Style Guide
+
 - Follow the [Airbnb JavaScript Style Guide](https://github.com/airbnb/javascript)
 - Use ESLint with Airbnb configuration for automated style enforcement
 - Configure Prettier to work alongside Airbnb rules
 
 ### General Principles
+
 - Write clean, readable, and maintainable code
 - Follow DRY (Don't Repeat Yourself) principles
 - Use meaningful variable and function names
@@ -20,6 +23,7 @@ This document contains general coding standards and architectural guidelines for
 - Write code with security in mind (especially for authentication and data handling)
 
 ### Naming Conventions (Airbnb Style)
+
 - Use camelCase for variables and functions
 - Use PascalCase for classes and constructors
 - Use UPPER_SNAKE_CASE for constants
@@ -30,6 +34,7 @@ This document contains general coding standards and architectural guidelines for
 - Use nouns for variables and classes
 
 ### File Organization
+
 ```
 /
 ├── package.json   # npm configuration and scripts
@@ -51,6 +56,7 @@ This document contains general coding standards and architectural guidelines for
 ## Architecture Decisions
 
 ### Technology Stack
+
 - **Language**: Vanilla JavaScript (ES6+)
 - **Runtime**: Browser
 - **Framework**: None (vanilla HTML, CSS, JS)
@@ -60,6 +66,7 @@ This document contains general coding standards and architectural guidelines for
 - **Package Manager**: npm (for dev tools and build process)
 
 ### Key Patterns (Following Airbnb Guidelines)
+
 - Use async/await for all asynchronous operations (prefer over Promises)
 - Use arrow functions for callbacks and short functions
 - Use destructuring assignment when appropriate
@@ -72,6 +79,7 @@ This document contains general coding standards and architectural guidelines for
 - Avoid var declarations
 
 ### Error Handling
+
 - Always handle API rate limits gracefully
 - Provide user-friendly error messages
 - Log detailed errors for debugging
@@ -81,6 +89,7 @@ This document contains general coding standards and architectural guidelines for
 ## Security Requirements
 
 ### API Access
+
 - Store authentication tokens securely in browser storage (localStorage/sessionStorage)
 - Implement token refresh logic using appropriate client libraries
 - Never log sensitive user data to console
@@ -89,12 +98,14 @@ This document contains general coding standards and architectural guidelines for
 - Handle browser storage limitations gracefully
 
 ### Data Privacy
+
 - Process data locally when possible
 - Don't store sensitive content unnecessarily
 - Respect user privacy preferences
 - Implement secure credential storage
 
 ### Testing Security
+
 - **Never include real credentials in test files**
 - Use mock data and fake API keys in tests
 - Ensure test databases are isolated from production
@@ -105,6 +116,7 @@ This document contains general coding standards and architectural guidelines for
 ## Testing Requirements
 
 ### Unit Tests
+
 - Test all business logic thoroughly
 - Mock API responses using tools like Jest, Sinon, or native mocking
 - Test error handling scenarios
@@ -116,10 +128,11 @@ This document contains general coding standards and architectural guidelines for
   - **Testing Library**: For DOM testing (if needed for complex UI)
   - **Sinon**: For mocking and stubbing (if advanced mocking needed)
 - **Unit Test Structure:**
+
   ```javascript
   // Example test structure with Vitest
   import { describe, it, expect, vi, beforeEach } from 'vitest';
-  
+
   describe('ComponentName', () => {
     beforeEach(() => {
       // Setup code
@@ -128,10 +141,10 @@ This document contains general coding standards and architectural guidelines for
     it('should handle valid input correctly', () => {
       // Arrange
       const input = 'test data';
-      
+
       // Act
       const result = functionUnderTest(input);
-      
+
       // Assert
       expect(result).toBe(expectedOutput);
     });
@@ -142,6 +155,7 @@ This document contains general coding standards and architectural guidelines for
     });
   });
   ```
+
 - **Testing npm Scripts** (add to package.json):
   ```json
   {
@@ -154,6 +168,7 @@ This document contains general coding standards and architectural guidelines for
   }
   ```
 - **Vitest Configuration** (vitest.config.js):
+
   ```javascript
   import { defineConfig } from 'vitest/config';
 
@@ -164,31 +179,28 @@ This document contains general coding standards and architectural guidelines for
       setupFiles: ['./tests/setup.js'], // Global setup
       coverage: {
         reporter: ['text', 'html', 'lcov'],
-        exclude: [
-          'node_modules/',
-          'tests/',
-          '**/*.test.js',
-          'coverage/',
-        ],
+        exclude: ['node_modules/', 'tests/', '**/*.test.js', 'coverage/'],
         thresholds: {
           global: {
             branches: 80,
             functions: 80,
             lines: 80,
-            statements: 80
-          }
-        }
-      }
-    }
+            statements: 80,
+          },
+        },
+      },
+    },
   });
   ```
 
 ### Integration Tests
+
 - Test authentication flow end-to-end
 - Test API integration
 - Test rate limiting behavior
 
 ### User Acceptance Tests
+
 - Test common use cases
 - Test edge cases (empty data, large datasets)
 - Test error scenarios users might encounter
@@ -196,6 +208,7 @@ This document contains general coding standards and architectural guidelines for
 ## Development Guidelines
 
 ### Version Control & Git Practices
+
 - Use meaningful commit messages following conventional commits format
 - Create feature branches for development (`feature/`, `bugfix/`, `hotfix/`)
 - Use pull requests for code review
@@ -212,6 +225,7 @@ This document contains general coding standards and architectural guidelines for
   - Coverage reports (`coverage/`)
 
 ### API Best Practices (Browser)
+
 - Use appropriate JavaScript client libraries via npm or CDN
 - Consider using a bundler like Webpack/Rollup for dependency management
 - Handle CORS appropriately for browser environment
@@ -222,6 +236,7 @@ This document contains general coding standards and architectural guidelines for
 - Handle partial failures gracefully
 
 ### Build & Development Tools
+
 - Use npm scripts for common tasks (build, dev server, etc.)
 - Consider live-reload dev server for development
 - **Use ESLint with Airbnb configuration** (`eslint-config-airbnb-base` for vanilla JS)
@@ -235,6 +250,7 @@ This document contains general coding standards and architectural guidelines for
   - `eslint-config-prettier`
 
 ### Browser-Specific Considerations
+
 - Use modern JavaScript features with appropriate polyfills if needed
 - Implement proper error boundaries for UI
 - Handle browser refresh/navigation gracefully
@@ -242,6 +258,7 @@ This document contains general coding standards and architectural guidelines for
 - Implement proper logout/cleanup procedures
 
 ### Performance Considerations
+
 - Minimize API calls through efficient filtering
 - Implement pagination for large result sets
 - Use streaming for processing large amounts of data
@@ -251,6 +268,7 @@ This document contains general coding standards and architectural guidelines for
 - Monitor and optimize bundle size
 
 ### Accessibility (a11y)
+
 - Ensure keyboard navigation support
 - Use semantic HTML elements
 - Provide proper ARIA labels and roles
@@ -259,6 +277,7 @@ This document contains general coding standards and architectural guidelines for
 - Test with accessibility tools
 
 ### User Experience
+
 - Provide clear progress indicators
 - Allow users to preview actions before execution
 - Implement undo functionality where possible
@@ -268,6 +287,7 @@ This document contains general coding standards and architectural guidelines for
 - Provide helpful error messages with actionable steps
 
 ### Code Quality & Maintenance
+
 - Set up automated code quality checks (GitHub Actions, etc.)
 - Use semantic versioning for releases
 - Maintain a CHANGELOG.md file
@@ -275,13 +295,99 @@ This document contains general coding standards and architectural guidelines for
 - Code review requirements before merging
 - Monitor application performance and errors
 
+## ESLint Configuration & Code Quality
+
+### Complete ESLint Setup
+
+Set up ESLint with Airbnb configuration for professional JavaScript development:
+
+**Dependencies to install:**
+
+```bash
+npm install --save-dev eslint eslint-config-airbnb-base eslint-plugin-import prettier eslint-config-prettier
+```
+
+**ESLint Configuration (.eslintrc.json):**
+
+```json
+{
+  "extends": ["airbnb-base", "prettier"],
+  "env": {
+    "browser": true,
+    "es2022": true,
+    "node": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-console": "warn",
+    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "prefer-const": "error",
+    "no-var": "error",
+    "no-underscore-dangle": "off",
+    "no-plusplus": "off",
+    "class-methods-use-this": "off",
+    "no-restricted-globals": ["error", "event", "fdescribe"]
+  },
+  "globals": {
+    "gapi": "readonly",
+    "google": "readonly",
+    "APP_CONFIG": "readonly",
+    "validateConfig": "readonly",
+    "StorageHelper": "readonly",
+    "GmailAuth": "readonly",
+    "GmailAPI": "readonly",
+    "EmailParser": "readonly",
+    "EmailAnalyzer": "readonly",
+    "Formatters": "readonly",
+    "gmailAuth": "writable",
+    "gmailAPI": "writable",
+    "dashboard": "writable",
+    "emailList": "writable"
+  }
+}
+```
+
+**Development Scripts (package.json):**
+
+```json
+{
+  "scripts": {
+    "lint": "eslint js/**/*.js",
+    "lint:fix": "eslint js/**/*.js --fix",
+    "format": "prettier --write js/**/*.js css/**/*.css *.html",
+    "format:check": "prettier --check js/**/*.js css/**/*.css *.html",
+    "quality": "npm run format && npm run lint:fix && npm run lint"
+  }
+}
+```
+
+### Code Quality Standards
+
+- **Target**: Professional JavaScript with Airbnb style compliance
+- **Error Tolerance**: ≤ 5 ESLint errors in production code
+- **Warning Management**: Console statements allowed as warnings for debugging
+- **Automated Fixing**: Use `npm run lint:fix` before commits
+- **Exception Handling**: Use ESLint disable comments sparingly with justification
+
+**Quality Metrics to Track:**
+
+- Total ESLint problems (target: < 100)
+- Error count (target: < 5)
+- Warning types (console statements expected)
+- Code coverage (if testing implemented)
+
 ## Configuration Management
+
 - Use environment variables for sensitive configuration
 - Provide sensible defaults
 - Allow user customization of application settings
 - Support configuration profiles/presets
 
 ## Deployment & Distribution
+
 - **Deployment**: Static web hosting (GitHub Pages, Netlify, etc.)
 - Include clear setup instructions for API credentials
 - Provide troubleshooting guide for browser compatibility
@@ -291,6 +397,7 @@ This document contains general coding standards and architectural guidelines for
 ## Common Patterns to Follow
 
 ### API Rate Limiting
+
 ```javascript
 // Example pattern for handling rate limits
 async function withRateLimit(apiCall) {
@@ -307,17 +414,18 @@ async function withRateLimit(apiCall) {
 ```
 
 ### Filter Pattern
+
 ```javascript
 // Example filter/processor interface
 class DataProcessor {
   constructor(criteria) {
     this.criteria = criteria;
   }
-  
+
   async process(data) {
     // Processing logic here
   }
-  
+
   validate() {
     // Validation logic
   }
@@ -327,6 +435,7 @@ class DataProcessor {
 ## Documentation Requirements
 
 ### README.md Structure
+
 Every project must include a comprehensive README.md with:
 
 1. **Project Title and Description**
@@ -379,6 +488,7 @@ Every project must include a comprehensive README.md with:
    - Attribution requirements
 
 ### Additional Documentation
+
 - Include JSDoc comments for all public methods
 - Generate clear user instructions for end users (separate from developer docs)
 - Document all configuration options
@@ -389,6 +499,7 @@ Every project must include a comprehensive README.md with:
 ### Repository Configuration Files
 
 #### .gitignore Requirements
+
 Every repository must include a comprehensive `.gitignore` file containing:
 
 ```gitignore
@@ -440,6 +551,7 @@ temp/
 ```
 
 #### Package.json Testing Scripts
+
 Ensure your `package.json` includes these essential testing scripts:
 
 ```json
@@ -457,6 +569,7 @@ Ensure your `package.json` includes these essential testing scripts:
 ```
 
 ## Prohibited Practices
+
 - Never store passwords or sensitive credentials in plain text
 - Don't ignore API errors or rate limits
 - Avoid blocking the UI thread
@@ -470,4 +583,4 @@ Ensure your `package.json` includes these essential testing scripts:
 
 ---
 
-*This document should be updated as coding standards evolve. Always refer to this file when making architectural decisions or implementing new features across JavaScript projects.*
+_This document should be updated as coding standards evolve. Always refer to this file when making architectural decisions or implementing new features across JavaScript projects._

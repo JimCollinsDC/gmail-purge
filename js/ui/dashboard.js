@@ -9,7 +9,7 @@ class Dashboard {
     this.isAnalyzing = false;
     this.currentAnalysis = null;
     this.selectedPreset = 'all';
-    
+
     this.initializeElements();
     this.attachEventListeners();
   }
@@ -23,30 +23,30 @@ class Dashboard {
       dashboardContainer: document.getElementById('dashboard'),
       loadingIndicator: document.getElementById('loading'),
       errorContainer: document.getElementById('error'),
-      
+
       // Stats overview
       totalEmailsCount: document.getElementById('total-emails'),
       totalSendersCount: document.getElementById('total-senders'),
       totalSizeValue: document.getElementById('total-size'),
       avgSizeValue: document.getElementById('avg-size'),
-      
+
       // Progress and status
       progressBar: document.querySelector('.progress-bar'),
       statusText: document.getElementById('status-text'),
-      
+
       // Analysis controls
       analyzeButton: document.getElementById('analyze-emails'),
       presetSelect: document.getElementById('analysis-preset'),
       refreshButton: document.getElementById('refresh-data'),
-      
+
       // Navigation
       viewToggleButtons: document.querySelectorAll('.view-toggle'),
       breadcrumbs: document.getElementById('breadcrumbs'),
-      
+
       // Content areas
       sendersList: document.getElementById('senders-list'),
       subjectsList: document.getElementById('subjects-list'),
-      insightsList: document.getElementById('insights-list')
+      insightsList: document.getElementById('insights-list'),
     };
   }
 
@@ -56,7 +56,9 @@ class Dashboard {
   attachEventListeners() {
     // Analysis controls
     if (this.elements.analyzeButton) {
-      this.elements.analyzeButton.addEventListener('click', () => this.startAnalysis());
+      this.elements.analyzeButton.addEventListener('click', () =>
+        this.startAnalysis()
+      );
     }
 
     if (this.elements.presetSelect) {
@@ -67,20 +69,22 @@ class Dashboard {
     }
 
     if (this.elements.refreshButton) {
-      this.elements.refreshButton.addEventListener('click', () => this.refreshData());
+      this.elements.refreshButton.addEventListener('click', () =>
+        this.refreshData()
+      );
     }
 
     // View toggles
-    this.elements.viewToggleButtons.forEach(button => {
+    this.elements.viewToggleButtons.forEach((button) => {
       button.addEventListener('click', (e) => {
-        const view = e.target.dataset.view;
+        const { view } = e.target.dataset;
         this.switchView(view);
       });
     });
 
     // Global error handler
     window.addEventListener('error', (e) => {
-      this.showError('An unexpected error occurred: ' + e.message);
+      this.showError(`An unexpected error occurred: ${e.message}`);
     });
   }
 
@@ -109,7 +113,10 @@ class Dashboard {
       const emails = await this.fetchEmailsByPreset();
 
       if (emails.length === 0) {
-        this.showMessage('No emails found matching the selected criteria.', 'info');
+        this.showMessage(
+          'No emails found matching the selected criteria.',
+          'info'
+        );
         return;
       }
 
@@ -120,8 +127,10 @@ class Dashboard {
       // Update dashboard
       this.updateDashboard(this.currentAnalysis);
       this.hideLoading();
-      this.showMessage(`Analysis complete! Found ${emails.length} emails from ${this.currentAnalysis.senders.senders.length} senders.`, 'success');
-
+      this.showMessage(
+        `Analysis complete! Found ${emails.length} emails from ${this.currentAnalysis.senders.senders.length} senders.`,
+        'success'
+      );
     } catch (error) {
       console.error('Analysis failed:', error);
       this.showError(`Analysis failed: ${error.message}`);
@@ -137,24 +146,28 @@ class Dashboard {
    */
   async fetchEmailsByPreset() {
     const presets = {
-      'all': { query: '', maxResults: 1000 },
+      all: { query: '', maxResults: 1000 },
       'recent-month': { query: 'newer_than:1m', maxResults: 1000 },
       'recent-year': { query: 'newer_than:1y', maxResults: 2000 },
       'large-emails': { query: 'larger:5M', maxResults: 500 },
       'with-attachments': { query: 'has:attachment', maxResults: 1000 },
-      'promotions': { query: 'category:promotions', maxResults: 1000 },
-      'social': { query: 'category:social', maxResults: 1000 },
-      'unread': { query: 'is:unread', maxResults: 500 }
+      promotions: { query: 'category:promotions', maxResults: 1000 },
+      social: { query: 'category:social', maxResults: 1000 },
+      unread: { query: 'is:unread', maxResults: 500 },
     };
 
     const preset = presets[this.selectedPreset] || presets.all;
-    
+
     const updateProgress = (current, total) => {
       const percentage = Math.round((current / total) * 100);
       this.updateProgress(percentage, `Fetching emails... ${current}/${total}`);
     };
 
-    return await GmailAPI.fetchEmails(preset.query, preset.maxResults, updateProgress);
+    return GmailAPI.fetchEmails(
+      preset.query,
+      preset.maxResults,
+      updateProgress
+    );
   }
 
   /**
@@ -164,13 +177,13 @@ class Dashboard {
   updateDashboard(analysis) {
     // Update overview stats
     this.updateOverviewStats(analysis.overview);
-    
+
     // Update senders list
     this.updateSendersList(analysis.senders);
-    
+
     // Update insights
     this.updateInsights(analysis.insights);
-    
+
     // Show dashboard
     this.showDashboard();
   }
@@ -181,19 +194,30 @@ class Dashboard {
    */
   updateOverviewStats(overview) {
     if (this.elements.totalEmailsCount) {
-      this.elements.totalEmailsCount.textContent = Formatters.formatNumber(overview.totalEmails);
+      this.elements.totalEmailsCount.textContent = Formatters.formatNumber(
+        overview.totalEmails
+      );
     }
 
-    if (this.elements.totalSendersCount && this.currentAnalysis.senders.senders) {
-      this.elements.totalSendersCount.textContent = Formatters.formatNumber(this.currentAnalysis.senders.senders.length);
+    if (
+      this.elements.totalSendersCount &&
+      this.currentAnalysis.senders.senders
+    ) {
+      this.elements.totalSendersCount.textContent = Formatters.formatNumber(
+        this.currentAnalysis.senders.senders.length
+      );
     }
 
     if (this.elements.totalSizeValue) {
-      this.elements.totalSizeValue.textContent = Formatters.formatFileSize(overview.totalSize);
+      this.elements.totalSizeValue.textContent = Formatters.formatFileSize(
+        overview.totalSize
+      );
     }
 
     if (this.elements.avgSizeValue) {
-      this.elements.avgSizeValue.textContent = Formatters.formatFileSize(overview.avgEmailSize);
+      this.elements.avgSizeValue.textContent = Formatters.formatFileSize(
+        overview.avgEmailSize
+      );
     }
   }
 
@@ -205,8 +229,10 @@ class Dashboard {
     if (!this.elements.sendersList) return;
 
     const topSenders = sendersData.topSenders || [];
-    
-    this.elements.sendersList.innerHTML = topSenders.map(sender => `
+
+    this.elements.sendersList.innerHTML = topSenders
+      .map(
+        (sender) => `
       <div class="sender-item" data-sender-id="${sender.id}">
         <div class="sender-info">
           <div class="sender-name">${Formatters.formatSender(sender.name, sender.email, 40)}</div>
@@ -232,17 +258,21 @@ class Dashboard {
           </button>
         </div>
       </div>
-    `).join('');
+    `
+      )
+      .join('');
 
     // Add click handlers for sender items
-    this.elements.sendersList.querySelectorAll('.sender-item').forEach(item => {
-      item.addEventListener('click', (e) => {
-        if (!e.target.classList.contains('btn-secondary')) {
-          const senderId = item.dataset.senderId;
-          this.viewSenderDetails(senderId);
-        }
+    this.elements.sendersList
+      .querySelectorAll('.sender-item')
+      .forEach((item) => {
+        item.addEventListener('click', (e) => {
+          if (!e.target.classList.contains('btn-secondary')) {
+            const { senderId } = item.dataset;
+            this.viewSenderDetails(senderId);
+          }
+        });
       });
-    });
   }
 
   /**
@@ -252,7 +282,9 @@ class Dashboard {
   updateInsights(insights) {
     if (!this.elements.insightsList || !insights.length) return;
 
-    this.elements.insightsList.innerHTML = insights.map(insight => `
+    this.elements.insightsList.innerHTML = insights
+      .map(
+        (insight) => `
       <div class="insight-item severity-${insight.severity}">
         <div class="insight-icon">
           ${this.getInsightIcon(insight.type)}
@@ -262,7 +294,9 @@ class Dashboard {
           <p class="insight-description">${insight.description}</p>
         </div>
       </div>
-    `).join('');
+    `
+      )
+      .join('');
   }
 
   /**
@@ -272,11 +306,11 @@ class Dashboard {
    */
   getInsightIcon(type) {
     const icons = {
-      'top_sender': '👤',
-      'storage': '💾',
-      'duplicates': '📋',
-      'large_emails': '📦',
-      'old_emails': '📅'
+      top_sender: '👤',
+      storage: '💾',
+      duplicates: '📋',
+      large_emails: '📦',
+      old_emails: '📅',
     };
     return icons[type] || '💡';
   }
@@ -288,13 +322,18 @@ class Dashboard {
   viewSenderDetails(senderId) {
     if (!this.currentAnalysis) return;
 
-    const sender = this.currentAnalysis.senders.senders.find(s => s.id === senderId);
+    const sender = this.currentAnalysis.senders.senders.find(
+      (s) => s.id === senderId
+    );
     if (!sender) return;
 
     // Update breadcrumbs
     this.updateBreadcrumbs([
       { text: 'Dashboard', action: () => this.showDashboard() },
-      { text: Formatters.formatSender(sender.name, sender.email, 30), active: true }
+      {
+        text: Formatters.formatSender(sender.name, sender.email, 30),
+        active: true,
+      },
     ]);
 
     // Show sender details view
@@ -313,7 +352,7 @@ class Dashboard {
           <div class="sender-meta">
             <span class="badge">${Formatters.formatEmailCount(sender.count)}</span>
             <span class="badge">${Formatters.formatFileSize(sender.totalSize)} total</span>
-            <span class="badge">${sender.categories.map(cat => Formatters.formatCategory(cat)).join(', ')}</span>
+            <span class="badge">${sender.categories.map((cat) => Formatters.formatCategory(cat)).join(', ')}</span>
           </div>
         </div>
         
@@ -345,15 +384,19 @@ class Dashboard {
     // Group emails by subject
     const subjectGroups = EmailParser.groupEmailsBySubject(sender.emails);
     const sortedSubjects = Object.entries(subjectGroups)
-      .sort(([,a], [,b]) => b.length - a.length)
+      .sort(([, a], [, b]) => b.length - a.length)
       .slice(0, 20); // Show top 20 subjects
 
-    return sortedSubjects.map(([subject, emails]) => `
+    return sortedSubjects
+      .map(
+        ([subject, emails]) => `
       <div class="subject-group">
         <div class="subject-title">${Formatters.formatSubject(subject)}</div>
         <div class="subject-count">${Formatters.formatEmailCount(emails.length)}</div>
       </div>
-    `).join('');
+    `
+      )
+      .join('');
   }
 
   /**
@@ -363,13 +406,14 @@ class Dashboard {
   updateBreadcrumbs(items) {
     if (!this.elements.breadcrumbs) return;
 
-    this.elements.breadcrumbs.innerHTML = items.map((item, index) => {
-      if (item.active) {
-        return `<span class="breadcrumb-item active">${item.text}</span>`;
-      } else {
+    this.elements.breadcrumbs.innerHTML = items
+      .map((item) => {
+        if (item.active) {
+          return `<span class="breadcrumb-item active">${item.text}</span>`;
+        }
         return `<button class="breadcrumb-item" onclick="(${item.action.toString()})()">${item.text}</button>`;
-      }
-    }).join('<span class="breadcrumb-separator">›</span>');
+      })
+      .join('<span class="breadcrumb-separator">›</span>');
   }
 
   /**
@@ -378,7 +422,7 @@ class Dashboard {
    */
   switchView(view) {
     // Update active button
-    this.elements.viewToggleButtons.forEach(btn => {
+    this.elements.viewToggleButtons.forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.view === view);
     });
 
@@ -406,7 +450,7 @@ class Dashboard {
 
     this.updateBreadcrumbs([
       { text: 'Dashboard', action: () => this.showDashboard() },
-      { text: 'Senders', active: true }
+      { text: 'Senders', active: true },
     ]);
 
     // Show full senders list
@@ -427,7 +471,9 @@ class Dashboard {
   renderFullSendersList() {
     if (!this.currentAnalysis) return '';
 
-    return this.currentAnalysis.senders.senders.map(sender => `
+    return this.currentAnalysis.senders.senders
+      .map(
+        (sender) => `
       <div class="sender-card" onclick="dashboard.viewSenderDetails('${sender.id}')">
         <div class="sender-name">${Formatters.formatSender(sender.name, sender.email, 25)}</div>
         <div class="sender-stats-grid">
@@ -441,7 +487,9 @@ class Dashboard {
           </div>
         </div>
       </div>
-    `).join('');
+    `
+      )
+      .join('');
   }
 
   /**
@@ -455,7 +503,7 @@ class Dashboard {
 
     this.updateBreadcrumbs([
       { text: 'Dashboard', action: () => this.showDashboard() },
-      { text: 'Subjects', active: true }
+      { text: 'Subjects', active: true },
     ]);
 
     this.elements.dashboardContainer.innerHTML = `
@@ -485,7 +533,10 @@ class Dashboard {
   renderSubjectsList() {
     if (!this.currentAnalysis) return '';
 
-    return this.currentAnalysis.subjects.subjects.slice(0, 50).map(subject => `
+    return this.currentAnalysis.subjects.subjects
+      .slice(0, 50)
+      .map(
+        (subject) => `
       <div class="subject-item">
         <div class="subject-content">
           <div class="subject-text">${Formatters.formatSubject(subject.subject)}</div>
@@ -496,16 +547,16 @@ class Dashboard {
         </div>
         <div class="subject-size">${Formatters.formatFileSize(subject.totalSize)}</div>
       </div>
-    `).join('');
+    `
+      )
+      .join('');
   }
 
   /**
    * Show main dashboard view
    */
   showDashboard() {
-    this.updateBreadcrumbs([
-      { text: 'Dashboard', active: true }
-    ]);
+    this.updateBreadcrumbs([{ text: 'Dashboard', active: true }]);
 
     // Reset to original dashboard content
     location.reload(); // Simple way to reset to original state
@@ -516,7 +567,10 @@ class Dashboard {
    */
   updateAnalysisPreset() {
     if (this.currentAnalysis) {
-      this.showMessage(`Preset changed to "${this.selectedPreset}". Click Analyze to refresh data.`, 'info');
+      this.showMessage(
+        `Preset changed to "${this.selectedPreset}". Click Analyze to refresh data.`,
+        'info'
+      );
     }
   }
 
@@ -525,7 +579,7 @@ class Dashboard {
    */
   async refreshData() {
     if (this.isAnalyzing) return;
-    
+
     this.emailAnalyzer.clearCache();
     StorageHelper.clearCache();
     await this.startAnalysis();
@@ -553,7 +607,9 @@ class Dashboard {
     if (!this.elements.analyzeButton) return;
 
     this.elements.analyzeButton.disabled = analyzing;
-    this.elements.analyzeButton.textContent = analyzing ? 'Analyzing...' : 'Analyze Emails';
+    this.elements.analyzeButton.textContent = analyzing
+      ? 'Analyzing...'
+      : 'Analyze Emails';
   }
 
   /**
@@ -630,9 +686,9 @@ class Dashboard {
 }
 
 // Initialize dashboard when DOM is loaded
-let dashboard;
 document.addEventListener('DOMContentLoaded', () => {
-  dashboard = new Dashboard();
+  // eslint-disable-next-line no-unused-vars
+  const dashboard = new Dashboard();
 });
 
 // Export for use in other modules

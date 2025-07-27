@@ -19,7 +19,7 @@ class Formatters {
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
 
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    const size = parseFloat((bytes / Math.pow(k, i)).toFixed(dm));
+    const size = parseFloat((bytes / k ** i).toFixed(dm));
 
     return `${size} ${sizes[i]}`;
   }
@@ -54,11 +54,15 @@ class Formatters {
     const diffYears = Math.floor(diffDays / 365);
 
     if (diffSeconds < 60) return 'Just now';
-    if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+    if (diffMinutes < 60)
+      return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`;
+    if (diffHours < 24)
+      return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
     if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
-    if (diffWeeks < 4) return `${diffWeeks} week${diffWeeks !== 1 ? 's' : ''} ago`;
-    if (diffMonths < 12) return `${diffMonths} month${diffMonths !== 1 ? 's' : ''} ago`;
+    if (diffWeeks < 4)
+      return `${diffWeeks} week${diffWeeks !== 1 ? 's' : ''} ago`;
+    if (diffMonths < 12)
+      return `${diffMonths} month${diffMonths !== 1 ? 's' : ''} ago`;
     return `${diffYears} year${diffYears !== 1 ? 's' : ''} ago`;
   }
 
@@ -71,10 +75,10 @@ class Formatters {
     if (!date) return '-';
 
     const targetDate = date instanceof Date ? date : new Date(date);
-    const options = { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    const options = {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     };
 
     return targetDate.toLocaleDateString('en-US', options);
@@ -109,13 +113,12 @@ class Formatters {
   static formatSender(senderName, senderEmail, maxLength = 50) {
     if (!senderEmail) return 'Unknown Sender';
 
-    let displayName = senderName && senderName !== senderEmail 
-      ? senderName 
-      : senderEmail;
+    let displayName =
+      senderName && senderName !== senderEmail ? senderName : senderEmail;
 
     // Truncate if too long
     if (displayName.length > maxLength) {
-      displayName = displayName.substring(0, maxLength - 3) + '...';
+      displayName = `${displayName.substring(0, maxLength - 3)}...`;
     }
 
     return displayName;
@@ -133,9 +136,9 @@ class Formatters {
     }
 
     const cleanSubject = subject.trim();
-    
+
     if (cleanSubject.length > maxLength) {
-      return cleanSubject.substring(0, maxLength - 3) + '...';
+      return `${cleanSubject.substring(0, maxLength - 3)}...`;
     }
 
     return cleanSubject;
@@ -150,7 +153,7 @@ class Formatters {
    */
   static formatPercentage(value, total, decimals = 1) {
     if (!total || total === 0) return '0%';
-    
+
     const percentage = (value / total) * 100;
     return `${percentage.toFixed(decimals)}%`;
   }
@@ -169,11 +172,11 @@ class Formatters {
 
     if (hours > 0) {
       return `${hours}h ${minutes % 60}m`;
-    } else if (minutes > 0) {
-      return `${minutes}m ${seconds % 60}s`;
-    } else {
-      return `${seconds}s`;
     }
+    if (minutes > 0) {
+      return `${minutes}m ${seconds % 60}s`;
+    }
+    return `${seconds}s`;
   }
 
   /**
@@ -215,9 +218,8 @@ class Formatters {
 
     if (emailsPerMB > 10) {
       return `${Math.round(emailsPerMB)} emails/MB`;
-    } else {
-      return `${emailsPerMB.toFixed(1)} emails/MB`;
     }
+    return `${emailsPerMB.toFixed(1)} emails/MB`;
   }
 
   /**
@@ -227,13 +229,13 @@ class Formatters {
    */
   static formatCategory(category) {
     const categoryMap = {
-      'primary': 'Primary',
-      'promotions': 'Promotions',
-      'social': 'Social',
-      'updates': 'Updates',
-      'forums': 'Forums',
-      'spam': 'Spam',
-      'important': 'Important'
+      primary: 'Primary',
+      promotions: 'Promotions',
+      social: 'Social',
+      updates: 'Updates',
+      forums: 'Forums',
+      spam: 'Spam',
+      important: 'Important',
     };
 
     return categoryMap[category] || 'Other';
@@ -246,13 +248,13 @@ class Formatters {
    */
   static getCategoryColor(category) {
     const colorMap = {
-      'primary': '#1a73e8',
-      'promotions': '#f9ab00',
-      'social': '#1e8e3e',
-      'updates': '#ff6d01',
-      'forums': '#9c27b0',
-      'spam': '#d93025',
-      'important': '#ea4335'
+      primary: '#1a73e8',
+      promotions: '#f9ab00',
+      social: '#1e8e3e',
+      updates: '#ff6d01',
+      forums: '#9c27b0',
+      spam: '#d93025',
+      important: '#ea4335',
     };
 
     return colorMap[category] || '#5f6368';

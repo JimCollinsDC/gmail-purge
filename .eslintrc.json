@@ -1,0 +1,41 @@
+{
+  "extends": [
+    "airbnb-base",
+    "prettier"
+  ],
+  "env": {
+    "browser": true,
+    "es2022": true,
+    "node": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-console": "warn",
+    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "prefer-const": "error",
+    "no-var": "error",
+    "no-underscore-dangle": "off",
+    "no-plusplus": "off",
+    "class-methods-use-this": "off",
+    "no-restricted-globals": ["error", "event", "fdescribe"]
+  },
+  "globals": {
+    "gapi": "readonly",
+    "google": "readonly",
+    "APP_CONFIG": "readonly",
+    "validateConfig": "readonly",
+    "StorageHelper": "readonly",
+    "GmailAuth": "readonly",
+    "GmailAPI": "readonly",
+    "EmailParser": "readonly",
+    "EmailAnalyzer": "readonly",
+    "Formatters": "readonly",
+    "gmailAuth": "writable",
+    "gmailAPI": "writable",
+    "dashboard": "writable",
+    "emailList": "writable"
+  }
+}

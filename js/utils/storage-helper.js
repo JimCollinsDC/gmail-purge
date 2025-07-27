@@ -11,7 +11,10 @@ class StorageHelper {
   static savePreferences(preferences) {
     try {
       const merged = { ...APP_CONFIG.DEFAULT_PREFERENCES, ...preferences };
-      localStorage.setItem(APP_CONFIG.STORAGE_KEYS.USER_PREFERENCES, JSON.stringify(merged));
+      localStorage.setItem(
+        APP_CONFIG.STORAGE_KEYS.USER_PREFERENCES,
+        JSON.stringify(merged)
+      );
       console.log('💾 User preferences saved');
     } catch (error) {
       console.error('❌ Failed to save preferences:', error);
@@ -24,7 +27,9 @@ class StorageHelper {
    */
   static loadPreferences() {
     try {
-      const stored = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.USER_PREFERENCES);
+      const stored = localStorage.getItem(
+        APP_CONFIG.STORAGE_KEYS.USER_PREFERENCES
+      );
       if (stored) {
         const preferences = JSON.parse(stored);
         return { ...APP_CONFIG.DEFAULT_PREFERENCES, ...preferences };
@@ -32,7 +37,7 @@ class StorageHelper {
     } catch (error) {
       console.error('❌ Failed to load preferences:', error);
     }
-    
+
     return { ...APP_CONFIG.DEFAULT_PREFERENCES };
   }
 
@@ -44,11 +49,14 @@ class StorageHelper {
     try {
       const cacheData = {
         timestamp: Date.now(),
-        data: analysisData
+        data: analysisData,
       };
-      
+
       // Use sessionStorage for analysis cache (cleared on tab close)
-      sessionStorage.setItem(APP_CONFIG.STORAGE_KEYS.ANALYSIS_CACHE, JSON.stringify(cacheData));
+      sessionStorage.setItem(
+        APP_CONFIG.STORAGE_KEYS.ANALYSIS_CACHE,
+        JSON.stringify(cacheData)
+      );
       console.log('💾 Analysis results cached');
     } catch (error) {
       console.error('❌ Failed to cache analysis:', error);
@@ -62,7 +70,9 @@ class StorageHelper {
    */
   static loadCachedAnalysis(maxAge = 3600000) {
     try {
-      const cached = sessionStorage.getItem(APP_CONFIG.STORAGE_KEYS.ANALYSIS_CACHE);
+      const cached = sessionStorage.getItem(
+        APP_CONFIG.STORAGE_KEYS.ANALYSIS_CACHE
+      );
       if (!cached) return null;
 
       const cacheData = JSON.parse(cached);
@@ -90,10 +100,13 @@ class StorageHelper {
     try {
       const data = {
         timestamp: Date.now(),
-        ...metadata
+        ...metadata,
       };
-      
-      localStorage.setItem(APP_CONFIG.STORAGE_KEYS.LAST_ANALYSIS, JSON.stringify(data));
+
+      localStorage.setItem(
+        APP_CONFIG.STORAGE_KEYS.LAST_ANALYSIS,
+        JSON.stringify(data)
+      );
     } catch (error) {
       console.error('❌ Failed to save analysis metadata:', error);
     }
@@ -105,7 +118,9 @@ class StorageHelper {
    */
   static loadLastAnalysisMetadata() {
     try {
-      const stored = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.LAST_ANALYSIS);
+      const stored = localStorage.getItem(
+        APP_CONFIG.STORAGE_KEYS.LAST_ANALYSIS
+      );
       return stored ? JSON.parse(stored) : null;
     } catch (error) {
       console.error('❌ Failed to load analysis metadata:', error);
@@ -142,7 +157,7 @@ class StorageHelper {
    */
   static clearAll() {
     try {
-      Object.values(APP_CONFIG.STORAGE_KEYS).forEach(key => {
+      Object.values(APP_CONFIG.STORAGE_KEYS).forEach((key) => {
         localStorage.removeItem(key);
         sessionStorage.removeItem(key);
       });
@@ -159,23 +174,21 @@ class StorageHelper {
   static getStorageInfo() {
     const getSize = (storage) => {
       let size = 0;
-      for (const key in storage) {
-        if (storage.hasOwnProperty(key)) {
-          size += storage[key].length + key.length;
-        }
-      }
+      Object.keys(storage).forEach((key) => {
+        size += storage[key].length + key.length;
+      });
       return size;
     };
 
     return {
       localStorage: {
         used: getSize(localStorage),
-        available: this._getAvailableStorage('localStorage')
+        available: this._getAvailableStorage('localStorage'),
       },
       sessionStorage: {
         used: getSize(sessionStorage),
-        available: this._getAvailableStorage('sessionStorage')
-      }
+        available: this._getAvailableStorage('sessionStorage'),
+      },
     };
   }
 
@@ -186,10 +199,11 @@ class StorageHelper {
    */
   static isStorageQuotaExceeded(storageType = 'localStorage') {
     try {
-      const storage = storageType === 'localStorage' ? localStorage : sessionStorage;
+      const storage =
+        storageType === 'localStorage' ? localStorage : sessionStorage;
       const testKey = '__quota_test__';
       const testData = '0'.repeat(1024); // 1KB test data
-      
+
       storage.setItem(testKey, testData);
       storage.removeItem(testKey);
       return false;
@@ -208,14 +222,15 @@ class StorageHelper {
    */
   static _getAvailableStorage(storageType) {
     try {
-      const storage = storageType === 'localStorage' ? localStorage : sessionStorage;
+      const storage =
+        storageType === 'localStorage' ? localStorage : sessionStorage;
       const testKey = '__size_test__';
       let size = 0;
-      
+
       // Binary search to find approximate available space
       let high = 10 * 1024 * 1024; // 10MB
       let low = 0;
-      
+
       while (low <= high) {
         const mid = Math.floor((low + high) / 2);
         try {
@@ -227,7 +242,7 @@ class StorageHelper {
           high = mid - 1;
         }
       }
-      
+
       return size;
     } catch (error) {
       console.warn('⚠️ Could not determine available storage:', error);

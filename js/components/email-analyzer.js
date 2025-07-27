@@ -28,7 +28,7 @@ class EmailAnalyzer {
     const senderStats = new Map();
 
     // Group emails by sender
-    emails.forEach(email => {
+    emails.forEach((email) => {
       const senderKey = EmailParser.getSenderKey(email.from);
       const senderInfo = EmailParser.parseSender(email.from);
 
@@ -39,12 +39,12 @@ class EmailAnalyzer {
           emails: [],
           totalSize: 0,
           categories: new Set(),
-          dateRange: { earliest: null, latest: null }
+          dateRange: { earliest: null, latest: null },
         });
         senderStats.set(senderKey, {
           hasAttachments: 0,
           avgSize: 0,
-          subjectVariations: new Set()
+          subjectVariations: new Set(),
         });
       }
 
@@ -54,7 +54,7 @@ class EmailAnalyzer {
       // Add email to sender
       sender.emails.push(email);
       sender.totalSize += email.size || 0;
-      
+
       if (email.category) {
         sender.categories.add(email.category);
       }
@@ -84,11 +84,17 @@ class EmailAnalyzer {
         ...sender,
         id: key,
         count: sender.emails.length,
-        avgSize: sender.emails.length > 0 ? sender.totalSize / sender.emails.length : 0,
-        attachmentRate: sender.emails.length > 0 ? stats.hasAttachments / sender.emails.length : 0,
+        avgSize:
+          sender.emails.length > 0
+            ? sender.totalSize / sender.emails.length
+            : 0,
+        attachmentRate:
+          sender.emails.length > 0
+            ? stats.hasAttachments / sender.emails.length
+            : 0,
         subjectVariations: stats.subjectVariations.size,
         categories: Array.from(sender.categories),
-        efficiency: this.calculateSenderEfficiency(sender)
+        efficiency: this.calculateSenderEfficiency(sender),
       };
     });
 
@@ -99,7 +105,7 @@ class EmailAnalyzer {
       totalEmails: emails.length,
       senders,
       topSenders: senders.slice(0, 20),
-      statistics: this.calculateSenderStatistics(senders)
+      statistics: this.calculateSenderStatistics(senders),
     };
 
     this.analysisCache.set(cacheKey, result);
@@ -125,18 +131,18 @@ class EmailAnalyzer {
     const patternMap = new Map();
 
     // Group emails by subject and detect patterns
-    emails.forEach(email => {
+    emails.forEach((email) => {
       const subject = email.subject || '(No Subject)';
       const normalizedSubject = this.normalizeSubject(subject);
 
       // Exact subject grouping
       if (!subjectMap.has(normalizedSubject)) {
         subjectMap.set(normalizedSubject, {
-          subject: subject,
+          subject,
           emails: [],
           senders: new Set(),
           totalSize: 0,
-          dateRange: { earliest: null, latest: null }
+          dateRange: { earliest: null, latest: null },
         });
       }
 
@@ -147,10 +153,16 @@ class EmailAnalyzer {
 
       // Update date range
       const emailDate = new Date(email.date);
-      if (!subjectGroup.dateRange.earliest || emailDate < subjectGroup.dateRange.earliest) {
+      if (
+        !subjectGroup.dateRange.earliest ||
+        emailDate < subjectGroup.dateRange.earliest
+      ) {
         subjectGroup.dateRange.earliest = emailDate;
       }
-      if (!subjectGroup.dateRange.latest || emailDate > subjectGroup.dateRange.latest) {
+      if (
+        !subjectGroup.dateRange.latest ||
+        emailDate > subjectGroup.dateRange.latest
+      ) {
         subjectGroup.dateRange.latest = emailDate;
       }
 
@@ -162,7 +174,7 @@ class EmailAnalyzer {
             pattern,
             count: 0,
             examples: new Set(),
-            senders: new Set()
+            senders: new Set(),
           });
         }
         const patternGroup = patternMap.get(pattern);
@@ -178,14 +190,15 @@ class EmailAnalyzer {
       id: key,
       count: group.emails.length,
       senderCount: group.senders.size,
-      avgSize: group.emails.length > 0 ? group.totalSize / group.emails.length : 0
+      avgSize:
+        group.emails.length > 0 ? group.totalSize / group.emails.length : 0,
     }));
 
     const patterns = Array.from(patternMap.entries()).map(([key, pattern]) => ({
       ...pattern,
       id: key,
       examples: Array.from(pattern.examples).slice(0, 5),
-      senderCount: pattern.senders.size
+      senderCount: pattern.senders.size,
     }));
 
     // Sort results
@@ -196,7 +209,7 @@ class EmailAnalyzer {
       totalEmails: emails.length,
       subjects: subjects.slice(0, 100), // Limit to top 100
       patterns: patterns.slice(0, 20),
-      statistics: this.calculateSubjectStatistics(subjects, patterns)
+      statistics: this.calculateSubjectStatistics(subjects, patterns),
     };
 
     this.analysisCache.set(cacheKey, result);
@@ -217,25 +230,25 @@ class EmailAnalyzer {
       { min: 0, max: 50 * 1024, label: 'Small (<50KB)' },
       { min: 50 * 1024, max: 500 * 1024, label: 'Medium (50KB-500KB)' },
       { min: 500 * 1024, max: 5 * 1024 * 1024, label: 'Large (500KB-5MB)' },
-      { min: 5 * 1024 * 1024, max: Infinity, label: 'Very Large (>5MB)' }
+      { min: 5 * 1024 * 1024, max: Infinity, label: 'Very Large (>5MB)' },
     ];
 
-    const distribution = sizeRanges.map(range => ({
+    const distribution = sizeRanges.map((range) => ({
       ...range,
       count: 0,
       totalSize: 0,
-      emails: []
+      emails: [],
     }));
 
     let totalSize = 0;
     const senderSizeMap = new Map();
 
-    emails.forEach(email => {
+    emails.forEach((email) => {
       const size = email.size || 0;
       totalSize += size;
 
       // Find size range
-      const range = distribution.find(r => size >= r.min && size < r.max);
+      const range = distribution.find((r) => size >= r.min && size < r.max);
       if (range) {
         range.count++;
         range.totalSize += size;
@@ -249,7 +262,7 @@ class EmailAnalyzer {
           sender: EmailParser.parseSender(email.from),
           totalSize: 0,
           count: 0,
-          avgSize: 0
+          avgSize: 0,
         });
       }
 
@@ -266,12 +279,12 @@ class EmailAnalyzer {
 
     return {
       totalSize,
-      distribution: distribution.map(range => ({
+      distribution: distribution.map((range) => ({
         ...range,
-        percentage: totalSize > 0 ? (range.totalSize / totalSize) * 100 : 0
+        percentage: totalSize > 0 ? (range.totalSize / totalSize) * 100 : 0,
       })),
       largeSenders,
-      avgEmailSize: emails.length > 0 ? totalSize / emails.length : 0
+      avgEmailSize: emails.length > 0 ? totalSize / emails.length : 0,
     };
   }
 
@@ -290,7 +303,7 @@ class EmailAnalyzer {
     try {
       const [senderAnalysis, subjectAnalysis] = await Promise.all([
         this.analyzeBySender(emails),
-        this.analyzeBySubject(emails)
+        this.analyzeBySubject(emails),
       ]);
 
       const sizeAnalysis = this.analyzeSizeDistribution(emails);
@@ -303,7 +316,7 @@ class EmailAnalyzer {
           totalSize: sizeAnalysis.totalSize,
           avgEmailSize: sizeAnalysis.avgEmailSize,
           dateRange: this.getDateRange(emails),
-          analysisDate: new Date()
+          analysisDate: new Date(),
         },
         senders: senderAnalysis,
         subjects: subjectAnalysis,
@@ -315,8 +328,8 @@ class EmailAnalyzer {
           subjectAnalysis,
           sizeAnalysis,
           timeAnalysis,
-          categoryAnalysis
-        })
+          categoryAnalysis,
+        }),
       };
 
       return report;
@@ -349,23 +362,21 @@ class EmailAnalyzer {
     if (!subject) return null;
 
     const patterns = [
-      { regex: /newsletter|digest|weekly|monthly|daily/i, pattern: 'Newsletter' },
+      {
+        regex: /newsletter|digest|weekly|monthly|daily/i,
+        pattern: 'Newsletter',
+      },
       { regex: /notification|alert|reminder/i, pattern: 'Notification' },
       { regex: /receipt|invoice|payment|billing/i, pattern: 'Financial' },
       { regex: /confirmation|verify|activate/i, pattern: 'Confirmation' },
       { regex: /security|login|password|account/i, pattern: 'Security' },
       { regex: /update|changelog|release|version/i, pattern: 'Updates' },
       { regex: /meeting|calendar|event|invitation/i, pattern: 'Calendar' },
-      { regex: /report|analytics|stats|summary/i, pattern: 'Reports' }
+      { regex: /report|analytics|stats|summary/i, pattern: 'Reports' },
     ];
 
-    for (const { regex, pattern } of patterns) {
-      if (regex.test(subject)) {
-        return pattern;
-      }
-    }
-
-    return null;
+    const matchingPattern = patterns.find(({ regex }) => regex.test(subject));
+    return matchingPattern ? matchingPattern.pattern : null;
   }
 
   /**
@@ -379,12 +390,12 @@ class EmailAnalyzer {
     let score = 0;
 
     // Email count factor (more emails = lower efficiency)
-    const emailCountScore = Math.max(0, 100 - (sender.emails.length / 10));
+    const emailCountScore = Math.max(0, 100 - sender.emails.length / 10);
     score += emailCountScore * 0.4;
 
     // Size efficiency (smaller average size = higher efficiency)
     const avgSizeMB = sender.avgSize / (1024 * 1024);
-    const sizeScore = Math.max(0, 100 - (avgSizeMB * 20));
+    const sizeScore = Math.max(0, 100 - avgSizeMB * 20);
     score += sizeScore * 0.3;
 
     // Subject variation (more variation = higher engagement)
@@ -401,19 +412,26 @@ class EmailAnalyzer {
    */
   calculateSenderStatistics(senders) {
     if (senders.length === 0) {
-      return { totalSenders: 0, avgEmailsPerSender: 0, medianEmailsPerSender: 0 };
+      return {
+        totalSenders: 0,
+        avgEmailsPerSender: 0,
+        medianEmailsPerSender: 0,
+      };
     }
 
-    const emailCounts = senders.map(s => s.count).sort((a, b) => a - b);
+    const emailCounts = senders.map((s) => s.count).sort((a, b) => a - b);
     const totalEmails = emailCounts.reduce((sum, count) => sum + count, 0);
 
     return {
       totalSenders: senders.length,
       avgEmailsPerSender: totalEmails / senders.length,
       medianEmailsPerSender: this.calculateMedian(emailCounts),
-      top10Percentage: senders.length >= 10 
-        ? (senders.slice(0, 10).reduce((sum, s) => sum + s.count, 0) / totalEmails) * 100
-        : 100
+      top10Percentage:
+        senders.length >= 10
+          ? (senders.slice(0, 10).reduce((sum, s) => sum + s.count, 0) /
+              totalEmails) *
+            100
+          : 100,
     };
   }
 
@@ -424,17 +442,22 @@ class EmailAnalyzer {
    * @returns {Object} Statistical summary
    */
   calculateSubjectStatistics(subjects, patterns) {
-    const duplicateSubjects = subjects.filter(s => s.count > 1);
-    const totalDuplicates = duplicateSubjects.reduce((sum, s) => sum + s.count, 0);
+    const duplicateSubjects = subjects.filter((s) => s.count > 1);
+    const totalDuplicates = duplicateSubjects.reduce(
+      (sum, s) => sum + s.count,
+      0
+    );
 
     return {
       uniqueSubjects: subjects.length,
       duplicateSubjects: duplicateSubjects.length,
       duplicateEmailCount: totalDuplicates,
       detectedPatterns: patterns.length,
-      avgSubjectLength: subjects.length > 0 
-        ? subjects.reduce((sum, s) => sum + s.subject.length, 0) / subjects.length 
-        : 0
+      avgSubjectLength:
+        subjects.length > 0
+          ? subjects.reduce((sum, s) => sum + s.subject.length, 0) /
+            subjects.length
+          : 0,
     };
   }
 
@@ -448,9 +471,9 @@ class EmailAnalyzer {
     const weeklyData = new Map();
     const hourlyData = new Array(24).fill(0);
 
-    emails.forEach(email => {
+    emails.forEach((email) => {
       const date = new Date(email.date);
-      
+
       // Monthly distribution
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       monthlyData.set(monthKey, (monthlyData.get(monthKey) || 0) + 1);
@@ -464,9 +487,15 @@ class EmailAnalyzer {
     });
 
     return {
-      monthly: Array.from(monthlyData.entries()).map(([month, count]) => ({ month, count })),
-      weekly: Array.from(weeklyData.entries()).map(([day, count]) => ({ day: parseInt(day), count })),
-      hourly: hourlyData.map((count, hour) => ({ hour, count }))
+      monthly: Array.from(monthlyData.entries()).map(([month, count]) => ({
+        month,
+        count,
+      })),
+      weekly: Array.from(weeklyData.entries()).map(([day, count]) => ({
+        day: parseInt(day, 10),
+        count,
+      })),
+      hourly: hourlyData.map((count, hour) => ({ hour, count })),
     };
   }
 
@@ -478,7 +507,7 @@ class EmailAnalyzer {
   analyzeCategoryDistribution(emails) {
     const categoryMap = new Map();
 
-    emails.forEach(email => {
+    emails.forEach((email) => {
       const category = email.category || 'uncategorized';
       if (!categoryMap.has(category)) {
         categoryMap.set(category, { count: 0, totalSize: 0 });
@@ -492,7 +521,7 @@ class EmailAnalyzer {
       category,
       count: data.count,
       totalSize: data.totalSize,
-      percentage: (data.count / emails.length) * 100
+      percentage: (data.count / emails.length) * 100,
     }));
   }
 
@@ -509,12 +538,18 @@ class EmailAnalyzer {
     if (analyses.senderAnalysis.topSenders.length > 0) {
       const topSender = analyses.senderAnalysis.topSenders[0];
       const percentage = (topSender.count / emails.length) * 100;
-      
+      let severity = 'low';
+      if (percentage > 20) {
+        severity = 'high';
+      } else if (percentage > 10) {
+        severity = 'medium';
+      }
+
       insights.push({
         type: 'top_sender',
         title: 'Top Email Sender',
         description: `${Formatters.formatSender(topSender.name, topSender.email)} sent ${topSender.count} emails (${percentage.toFixed(1)}% of your total)`,
-        severity: percentage > 20 ? 'high' : percentage > 10 ? 'medium' : 'low'
+        severity,
       });
     }
 
@@ -525,18 +560,21 @@ class EmailAnalyzer {
         type: 'storage',
         title: 'Largest Storage User',
         description: `${Formatters.formatSender(topStorageUser.sender.name, topStorageUser.sender.email)} uses ${Formatters.formatFileSize(topStorageUser.totalSize)} of storage`,
-        severity: topStorageUser.totalSize > 100 * 1024 * 1024 ? 'high' : 'medium'
+        severity:
+          topStorageUser.totalSize > 100 * 1024 * 1024 ? 'high' : 'medium',
       });
     }
 
     // Duplicate subjects insight
-    const duplicateSubjects = analyses.subjects.subjects.filter(s => s.count > 5);
+    const duplicateSubjects = analyses.subjects.subjects.filter(
+      (s) => s.count > 5
+    );
     if (duplicateSubjects.length > 0) {
       insights.push({
         type: 'duplicates',
         title: 'Duplicate Emails Detected',
         description: `Found ${duplicateSubjects.length} subjects with 5+ duplicate emails. Consider cleaning up repeated messages.`,
-        severity: 'medium'
+        severity: 'medium',
       });
     }
 
@@ -553,10 +591,12 @@ class EmailAnalyzer {
       return { earliest: null, latest: null };
     }
 
-    const dates = emails.map(email => new Date(email.date)).sort((a, b) => a - b);
+    const dates = emails
+      .map((email) => new Date(email.date))
+      .sort((a, b) => a - b);
     return {
       earliest: dates[0],
-      latest: dates[dates.length - 1]
+      latest: dates[dates.length - 1],
     };
   }
 
@@ -567,10 +607,10 @@ class EmailAnalyzer {
    */
   calculateMedian(values) {
     if (values.length === 0) return 0;
-    
+
     const mid = Math.floor(values.length / 2);
-    return values.length % 2 === 0 
-      ? (values[mid - 1] + values[mid]) / 2 
+    return values.length % 2 === 0
+      ? (values[mid - 1] + values[mid]) / 2
       : values[mid];
   }
 

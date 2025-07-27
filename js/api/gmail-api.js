@@ -43,16 +43,19 @@ class GmailAPI {
       console.log('📧 Starting to fetch all messages...');
 
       do {
+        // eslint-disable-next-line no-await-in-loop
         const response = await this._makeAPICall('gmail.users.messages.list', {
           userId: 'me',
           maxResults: APP_CONFIG.MAX_RESULTS_PER_BATCH,
           pageToken: nextPageToken,
-          q: options.query || ''
+          q: options.query || '',
         });
 
         if (response.messages) {
           allMessages.push(...response.messages);
-          console.log(`📦 Fetched ${response.messages.length} messages (Total: ${allMessages.length})`);
+          console.log(
+            `📦 Fetched ${response.messages.length} messages (Total: ${allMessages.length})`
+          );
         }
 
         nextPageToken = response.nextPageToken;
@@ -63,20 +66,19 @@ class GmailAPI {
           options.onProgress({
             fetched: allMessages.length,
             hasMore: !!nextPageToken,
-            page: pageCount
+            page: pageCount,
           });
         }
 
         // Add delay to respect rate limits
         if (nextPageToken) {
+          // eslint-disable-next-line no-await-in-loop
           await this._delay(this.rateLimitDelay);
         }
-
       } while (nextPageToken && pageCount < maxPages);
 
       console.log(`✅ Finished fetching ${allMessages.length} messages`);
       return allMessages;
-
     } catch (error) {
       console.error('❌ Failed to fetch messages:', error);
       this._handleAPIError(error);
@@ -101,16 +103,19 @@ class GmailAPI {
       // Process messages in batches
       for (let i = 0; i < messageIds.length; i += batchSize) {
         const batch = messageIds.slice(i, i + batchSize);
-        
+
         // Create promises for batch requests
         const batchPromises = batch.map(async (messageId) => {
           try {
-            const response = await this._makeAPICall('gmail.users.messages.get', {
-              userId: 'me',
-              id: messageId,
-              format: 'metadata',
-              metadataHeaders: ['From', 'To', 'Subject', 'Date']
-            });
+            const response = await this._makeAPICall(
+              'gmail.users.messages.get',
+              {
+                userId: 'me',
+                id: messageId,
+                format: 'metadata',
+                metadataHeaders: ['From', 'To', 'Subject', 'Date'],
+              }
+            );
             return response;
           } catch (error) {
             console.warn(`⚠️ Failed to fetch message ${messageId}:`, error);
@@ -119,8 +124,9 @@ class GmailAPI {
         });
 
         // Wait for batch to complete
+        // eslint-disable-next-line no-await-in-loop
         const batchResults = await Promise.all(batchPromises);
-        const validResults = batchResults.filter(result => result !== null);
+        const validResults = batchResults.filter((result) => result !== null);
         detailedMessages.push(...validResults);
 
         // Update progress
@@ -128,21 +134,28 @@ class GmailAPI {
           onProgress({
             processed: Math.min(i + batchSize, messageIds.length),
             total: messageIds.length,
-            percentage: Math.round((Math.min(i + batchSize, messageIds.length) / messageIds.length) * 100)
+            percentage: Math.round(
+              (Math.min(i + batchSize, messageIds.length) / messageIds.length) *
+                100
+            ),
           });
         }
 
-        console.log(`📦 Processed batch ${Math.ceil((i + batchSize) / batchSize)} - ${detailedMessages.length} total messages`);
+        console.log(
+          `📦 Processed batch ${Math.ceil((i + batchSize) / batchSize)} - ${detailedMessages.length} total messages`
+        );
 
         // Add delay between batches to respect rate limits
         if (i + batchSize < messageIds.length) {
+          // eslint-disable-next-line no-await-in-loop
           await this._delay(this.rateLimitDelay * 2);
         }
       }
 
-      console.log(`✅ Successfully fetched details for ${detailedMessages.length} messages`);
+      console.log(
+        `✅ Successfully fetched details for ${detailedMessages.length} messages`
+      );
       return detailedMessages;
-
     } catch (error) {
       console.error('❌ Failed to fetch message details:', error);
       this._handleAPIError(error);
@@ -159,14 +172,14 @@ class GmailAPI {
 
     try {
       const response = await this._makeAPICall('gmail.users.getProfile', {
-        userId: 'me'
+        userId: 'me',
       });
 
       return {
         emailAddress: response.emailAddress,
         messagesTotal: response.messagesTotal,
         threadsTotal: response.threadsTotal,
-        historyId: response.historyId
+        historyId: response.historyId,
       };
     } catch (error) {
       console.error('❌ Failed to fetch user profile:', error);
@@ -184,7 +197,7 @@ class GmailAPI {
 
     try {
       const response = await this._makeAPICall('gmail.users.labels.list', {
-        userId: 'me'
+        userId: 'me',
       });
 
       return response.labels || [];
@@ -207,14 +220,14 @@ class GmailAPI {
         callback: async () => {
           try {
             await gapi.client.init({
-              discoveryDocs: APP_CONFIG.DISCOVERY_DOCS
+              discoveryDocs: APP_CONFIG.DISCOVERY_DOCS,
             });
             resolve();
           } catch (error) {
             reject(error);
           }
         },
-        onerror: () => reject(new Error('Failed to load Google API client'))
+        onerror: () => reject(new Error('Failed to load Google API client')),
       });
     });
   }
@@ -234,22 +247,21 @@ class GmailAPI {
       // Navigate to the correct API method
       const methodParts = method.split('.');
       let apiMethod = gapi.client;
-      
-      for (const part of methodParts) {
+
+      methodParts.forEach((part) => {
         apiMethod = apiMethod[part];
-      }
+      });
 
       const response = await apiMethod(params);
       return response.result;
-
     } catch (error) {
       console.error(`❌ API call failed for ${method}:`, error);
 
       // Handle rate limiting with exponential backoff
       if (error.status === 429 && retryCount < maxRetries) {
-        const backoffDelay = Math.pow(2, retryCount) * 1000;
+        const backoffDelay = 2 ** retryCount * 1000;
         console.log(`⏳ Rate limited. Retrying in ${backoffDelay}ms...`);
-        
+
         await this._delay(backoffDelay);
         return this._makeAPICall(method, params, retryCount + 1);
       }
@@ -282,15 +294,18 @@ class GmailAPI {
     if (error.status === 429) {
       errorMessage = APP_CONFIG.ERROR_MESSAGES.API_QUOTA_EXCEEDED;
     } else if (error.status >= 500) {
-      errorMessage = 'Gmail service temporarily unavailable. Please try again later.';
+      errorMessage =
+        'Gmail service temporarily unavailable. Please try again later.';
     } else if (error.status === 401) {
       errorMessage = 'Authentication expired. Please sign in again.';
     }
 
     // Dispatch error event
-    window.dispatchEvent(new CustomEvent('gmailAPIError', {
-      detail: { error, message: errorMessage }
-    }));
+    window.dispatchEvent(
+      new CustomEvent('gmailAPIError', {
+        detail: { error, message: errorMessage },
+      })
+    );
   }
 
   /**
@@ -300,9 +315,12 @@ class GmailAPI {
    * @returns {Promise} Delay promise
    */
   _delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
   }
 }
 
 // Create global instance
+// eslint-disable-next-line no-unused-vars
 const gmailAPI = new GmailAPI();

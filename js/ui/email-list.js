@@ -16,7 +16,7 @@ class EmailList {
       dateRange: null,
       sizeRange: null,
       hasAttachments: null,
-      category: null
+      category: null,
     };
 
     this.initializeElements();
@@ -31,31 +31,31 @@ class EmailList {
       // Main containers
       emailListContainer: document.getElementById('email-list'),
       emailGrid: document.getElementById('email-grid'),
-      
+
       // Controls
       searchInput: document.getElementById('email-search'),
       sortSelect: document.getElementById('sort-select'),
       filtersPanel: document.getElementById('filters-panel'),
       clearFiltersBtn: document.getElementById('clear-filters'),
-      
+
       // Pagination
       paginationContainer: document.getElementById('pagination'),
       pageInfo: document.getElementById('page-info'),
       prevPageBtn: document.getElementById('prev-page'),
       nextPageBtn: document.getElementById('next-page'),
-      
+
       // Bulk actions
       selectAllCheckbox: document.getElementById('select-all'),
       bulkActionsPanel: document.getElementById('bulk-actions'),
       selectedCount: document.getElementById('selected-count'),
-      
+
       // Filters
       dateFromInput: document.getElementById('date-from'),
       dateToInput: document.getElementById('date-to'),
       minSizeInput: document.getElementById('min-size'),
       maxSizeInput: document.getElementById('max-size'),
       attachmentFilter: document.getElementById('attachment-filter'),
-      categoryFilter: document.getElementById('category-filter')
+      categoryFilter: document.getElementById('category-filter'),
     };
   }
 
@@ -65,7 +65,8 @@ class EmailList {
   attachEventListeners() {
     // Search
     if (this.elements.searchInput) {
-      this.elements.searchInput.addEventListener('input', 
+      this.elements.searchInput.addEventListener(
+        'input',
         this.debounce((e) => this.handleSearch(e.target.value), 300)
       );
     }
@@ -80,10 +81,14 @@ class EmailList {
 
     // Pagination
     if (this.elements.prevPageBtn) {
-      this.elements.prevPageBtn.addEventListener('click', () => this.previousPage());
+      this.elements.prevPageBtn.addEventListener('click', () =>
+        this.previousPage()
+      );
     }
     if (this.elements.nextPageBtn) {
-      this.elements.nextPageBtn.addEventListener('click', () => this.nextPage());
+      this.elements.nextPageBtn.addEventListener('click', () =>
+        this.nextPage()
+      );
     }
 
     // Bulk selection
@@ -95,44 +100,55 @@ class EmailList {
 
     // Filters
     if (this.elements.clearFiltersBtn) {
-      this.elements.clearFiltersBtn.addEventListener('click', () => this.clearFilters());
+      this.elements.clearFiltersBtn.addEventListener('click', () =>
+        this.clearFilters()
+      );
     }
 
     // Date filters
     if (this.elements.dateFromInput) {
-      this.elements.dateFromInput.addEventListener('change', () => this.updateDateFilter());
+      this.elements.dateFromInput.addEventListener('change', () =>
+        this.updateDateFilter()
+      );
     }
     if (this.elements.dateToInput) {
-      this.elements.dateToInput.addEventListener('change', () => this.updateDateFilter());
+      this.elements.dateToInput.addEventListener('change', () =>
+        this.updateDateFilter()
+      );
     }
 
     // Size filters
     if (this.elements.minSizeInput) {
-      this.elements.minSizeInput.addEventListener('input', 
+      this.elements.minSizeInput.addEventListener(
+        'input',
         this.debounce(() => this.updateSizeFilter(), 500)
       );
     }
     if (this.elements.maxSizeInput) {
-      this.elements.maxSizeInput.addEventListener('input', 
+      this.elements.maxSizeInput.addEventListener(
+        'input',
         this.debounce(() => this.updateSizeFilter(), 500)
       );
     }
 
     // Other filters
     if (this.elements.attachmentFilter) {
-      this.elements.attachmentFilter.addEventListener('change', () => this.updateAttachmentFilter());
+      this.elements.attachmentFilter.addEventListener('change', () =>
+        this.updateAttachmentFilter()
+      );
     }
     if (this.elements.categoryFilter) {
-      this.elements.categoryFilter.addEventListener('change', () => this.updateCategoryFilter());
+      this.elements.categoryFilter.addEventListener('change', () =>
+        this.updateCategoryFilter()
+      );
     }
   }
 
   /**
    * Display emails list
    * @param {Array} emails - Array of email objects
-   * @param {Object} options - Display options
    */
-  displayEmails(emails, options = {}) {
+  displayEmails(emails) {
     this.currentEmails = emails || [];
     this.filteredEmails = [...this.currentEmails];
     this.currentPage = 1;
@@ -173,9 +189,9 @@ class EmailList {
       return;
     }
 
-    this.elements.emailGrid.innerHTML = pageEmails.map(email => 
-      this.renderEmailItem(email)
-    ).join('');
+    this.elements.emailGrid.innerHTML = pageEmails
+      .map((email) => this.renderEmailItem(email))
+      .join('');
 
     // Attach click handlers
     this.attachEmailItemHandlers();
@@ -189,8 +205,12 @@ class EmailList {
   renderEmailItem(email) {
     const sender = EmailParser.parseSender(email.from);
     const isUnread = email.labelIds && email.labelIds.includes('UNREAD');
-    const hasAttachments = email.payload && email.payload.parts && 
-      email.payload.parts.some(part => part.filename && part.filename.length > 0);
+    const hasAttachments =
+      email.payload &&
+      email.payload.parts &&
+      email.payload.parts.some(
+        (part) => part.filename && part.filename.length > 0
+      );
 
     return `
       <div class="email-item ${isUnread ? 'unread' : ''}" data-email-id="${email.id}">
@@ -238,18 +258,23 @@ class EmailList {
     if (email.snippet) {
       return Formatters.truncateText(email.snippet, 100);
     }
-    
+
     // Try to extract from payload
     if (email.payload && email.payload.body && email.payload.body.data) {
       try {
-        const decoded = atob(email.payload.body.data.replace(/-/g, '+').replace(/_/g, '/'));
-        const stripped = decoded.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+        const decoded = atob(
+          email.payload.body.data.replace(/-/g, '+').replace(/_/g, '/')
+        );
+        const stripped = decoded
+          .replace(/<[^>]*>/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
         return Formatters.truncateText(stripped, 100);
       } catch (e) {
         // Ignore decoding errors
       }
     }
-    
+
     return 'No preview available';
   }
 
@@ -258,20 +283,24 @@ class EmailList {
    */
   attachEmailItemHandlers() {
     // Individual email selection
-    this.elements.emailGrid.querySelectorAll('.email-select').forEach(checkbox => {
-      checkbox.addEventListener('change', () => {
-        this.updateSelectionState();
-        this.updateBulkActions();
+    this.elements.emailGrid
+      .querySelectorAll('.email-select')
+      .forEach((checkbox) => {
+        checkbox.addEventListener('change', () => {
+          this.updateSelectionState();
+          this.updateBulkActions();
+        });
       });
-    });
 
     // Email item click (not on controls)
-    this.elements.emailGrid.querySelectorAll('.email-item').forEach(item => {
+    this.elements.emailGrid.querySelectorAll('.email-item').forEach((item) => {
       item.addEventListener('click', (e) => {
-        if (!e.target.closest('.email-checkbox') && 
-            !e.target.closest('.email-actions') &&
-            !e.target.closest('button')) {
-          const emailId = item.dataset.emailId;
+        if (
+          !e.target.closest('.email-checkbox') &&
+          !e.target.closest('.email-actions') &&
+          !e.target.closest('button')
+        ) {
+          const { emailId } = item.dataset;
           this.viewEmail(emailId);
         }
       });
@@ -284,17 +313,16 @@ class EmailList {
    */
   async viewEmail(emailId) {
     try {
-      const email = this.currentEmails.find(e => e.id === emailId);
+      const email = this.currentEmails.find((e) => e.id === emailId);
       if (!email) {
         throw new Error('Email not found');
       }
 
       // Get full email details if needed
       const fullEmail = await GmailAPI.getEmail(emailId);
-      
+
       // Show email in modal or dedicated view
       this.showEmailModal(fullEmail);
-      
     } catch (error) {
       console.error('Failed to view email:', error);
       this.showMessage(`Failed to load email: ${error.message}`, 'error');
@@ -306,12 +334,16 @@ class EmailList {
    * @param {string} emailId - Email ID
    */
   showEmailInfo(emailId) {
-    const email = this.currentEmails.find(e => e.id === emailId);
+    const email = this.currentEmails.find((e) => e.id === emailId);
     if (!email) return;
 
     const sender = EmailParser.parseSender(email.from);
-    const hasAttachments = email.payload && email.payload.parts && 
-      email.payload.parts.some(part => part.filename && part.filename.length > 0);
+    const hasAttachments =
+      email.payload &&
+      email.payload.parts &&
+      email.payload.parts.some(
+        (part) => part.filename && part.filename.length > 0
+      );
 
     const infoHtml = `
       <div class="email-info-modal">
@@ -433,10 +465,11 @@ class EmailList {
     }
 
     // Try to get HTML content first, then plain text
-    let content = this.extractFromParts(email.payload.parts, 'text/html') ||
-                  this.extractFromParts(email.payload.parts, 'text/plain') ||
-                  email.snippet || 
-                  'Content not available';
+    let content =
+      this.extractFromParts(email.payload.parts, 'text/html') ||
+      this.extractFromParts(email.payload.parts, 'text/plain') ||
+      email.snippet ||
+      'Content not available';
 
     // If it's plain text, convert to HTML
     if (!content.includes('<')) {
@@ -455,6 +488,7 @@ class EmailList {
   extractFromParts(parts, mimeType) {
     if (!parts) return null;
 
+    // eslint-disable-next-line no-restricted-syntax
     for (const part of parts) {
       if (part.mimeType === mimeType && part.body && part.body.data) {
         try {
@@ -463,7 +497,7 @@ class EmailList {
           console.error('Failed to decode email content:', e);
         }
       }
-      
+
       // Recursively check nested parts
       if (part.parts) {
         const nestedContent = this.extractFromParts(part.parts, mimeType);
@@ -505,7 +539,8 @@ class EmailList {
    */
   sortEmails() {
     this.filteredEmails.sort((a, b) => {
-      let valueA, valueB;
+      let valueA;
+      let valueB;
 
       switch (this.sortBy) {
         case 'date':
@@ -540,15 +575,17 @@ class EmailList {
    * Apply all active filters
    */
   applyFilters() {
-    this.filteredEmails = this.currentEmails.filter(email => {
+    this.filteredEmails = this.currentEmails.filter((email) => {
       // Search filter
       if (this.filters.search) {
         const searchable = [
           email.subject || '',
           email.snippet || '',
           EmailParser.parseSender(email.from).name,
-          EmailParser.parseSender(email.from).email
-        ].join(' ').toLowerCase();
+          EmailParser.parseSender(email.from).email,
+        ]
+          .join(' ')
+          .toLowerCase();
 
         if (!searchable.includes(this.filters.search)) {
           return false;
@@ -558,10 +595,16 @@ class EmailList {
       // Date range filter
       if (this.filters.dateRange) {
         const emailDate = new Date(email.date);
-        if (this.filters.dateRange.from && emailDate < this.filters.dateRange.from) {
+        if (
+          this.filters.dateRange.from &&
+          emailDate < this.filters.dateRange.from
+        ) {
           return false;
         }
-        if (this.filters.dateRange.to && emailDate > this.filters.dateRange.to) {
+        if (
+          this.filters.dateRange.to &&
+          emailDate > this.filters.dateRange.to
+        ) {
           return false;
         }
       }
@@ -569,18 +612,28 @@ class EmailList {
       // Size range filter
       if (this.filters.sizeRange) {
         const emailSize = email.size || 0;
-        if (this.filters.sizeRange.min && emailSize < this.filters.sizeRange.min) {
+        if (
+          this.filters.sizeRange.min &&
+          emailSize < this.filters.sizeRange.min
+        ) {
           return false;
         }
-        if (this.filters.sizeRange.max && emailSize > this.filters.sizeRange.max) {
+        if (
+          this.filters.sizeRange.max &&
+          emailSize > this.filters.sizeRange.max
+        ) {
           return false;
         }
       }
 
       // Attachment filter
       if (this.filters.hasAttachments !== null) {
-        const hasAttachments = email.payload && email.payload.parts && 
-          email.payload.parts.some(part => part.filename && part.filename.length > 0);
+        const hasAttachments =
+          email.payload &&
+          email.payload.parts &&
+          email.payload.parts.some(
+            (part) => part.filename && part.filename.length > 0
+          );
         if (this.filters.hasAttachments !== hasAttachments) {
           return false;
         }
@@ -601,8 +654,12 @@ class EmailList {
    * Update date filter
    */
   updateDateFilter() {
-    const fromDate = this.elements.dateFromInput?.value ? new Date(this.elements.dateFromInput.value) : null;
-    const toDate = this.elements.dateToInput?.value ? new Date(this.elements.dateToInput.value) : null;
+    const fromDate = this.elements.dateFromInput?.value
+      ? new Date(this.elements.dateFromInput.value)
+      : null;
+    const toDate = this.elements.dateToInput?.value
+      ? new Date(this.elements.dateToInput.value)
+      : null;
 
     if (fromDate || toDate) {
       this.filters.dateRange = { from: fromDate, to: toDate };
@@ -620,8 +677,12 @@ class EmailList {
    * Update size filter
    */
   updateSizeFilter() {
-    const minSize = this.elements.minSizeInput?.value ? parseInt(this.elements.minSizeInput.value) * 1024 : null;
-    const maxSize = this.elements.maxSizeInput?.value ? parseInt(this.elements.maxSizeInput.value) * 1024 : null;
+    const minSize = this.elements.minSizeInput?.value
+      ? parseInt(this.elements.minSizeInput.value, 10) * 1024
+      : null;
+    const maxSize = this.elements.maxSizeInput?.value
+      ? parseInt(this.elements.maxSizeInput.value, 10) * 1024
+      : null;
 
     if (minSize || maxSize) {
       this.filters.sizeRange = { min: minSize, max: maxSize };
@@ -670,7 +731,7 @@ class EmailList {
       dateRange: null,
       sizeRange: null,
       hasAttachments: null,
-      category: null
+      category: null,
     };
 
     // Reset form elements
@@ -679,8 +740,10 @@ class EmailList {
     if (this.elements.dateToInput) this.elements.dateToInput.value = '';
     if (this.elements.minSizeInput) this.elements.minSizeInput.value = '';
     if (this.elements.maxSizeInput) this.elements.maxSizeInput.value = '';
-    if (this.elements.attachmentFilter) this.elements.attachmentFilter.value = 'all';
-    if (this.elements.categoryFilter) this.elements.categoryFilter.value = 'all';
+    if (this.elements.attachmentFilter)
+      this.elements.attachmentFilter.value = 'all';
+    if (this.elements.categoryFilter)
+      this.elements.categoryFilter.value = 'all';
 
     this.currentPage = 1;
     this.applyFilters();
@@ -692,14 +755,21 @@ class EmailList {
    * Update pagination controls
    */
   updatePagination() {
-    const totalPages = Math.ceil(this.filteredEmails.length / this.emailsPerPage);
-    
+    const totalPages = Math.ceil(
+      this.filteredEmails.length / this.emailsPerPage
+    );
+
     if (this.elements.pageInfo) {
-      const startItem = Math.min((this.currentPage - 1) * this.emailsPerPage + 1, this.filteredEmails.length);
-      const endItem = Math.min(this.currentPage * this.emailsPerPage, this.filteredEmails.length);
-      
-      this.elements.pageInfo.textContent = 
-        `${startItem}-${endItem} of ${Formatters.formatNumber(this.filteredEmails.length)} emails`;
+      const startItem = Math.min(
+        (this.currentPage - 1) * this.emailsPerPage + 1,
+        this.filteredEmails.length
+      );
+      const endItem = Math.min(
+        this.currentPage * this.emailsPerPage,
+        this.filteredEmails.length
+      );
+
+      this.elements.pageInfo.textContent = `${startItem}-${endItem} of ${Formatters.formatNumber(this.filteredEmails.length)} emails`;
     }
 
     if (this.elements.prevPageBtn) {
@@ -726,7 +796,9 @@ class EmailList {
    * Go to next page
    */
   nextPage() {
-    const totalPages = Math.ceil(this.filteredEmails.length / this.emailsPerPage);
+    const totalPages = Math.ceil(
+      this.filteredEmails.length / this.emailsPerPage
+    );
     if (this.currentPage < totalPages) {
       this.currentPage++;
       this.renderEmailList();
@@ -739,9 +811,12 @@ class EmailList {
    * @param {boolean} selected - Whether to select all
    */
   toggleSelectAll(selected) {
-    this.elements.emailGrid.querySelectorAll('.email-select').forEach(checkbox => {
-      checkbox.checked = selected;
-    });
+    this.elements.emailGrid
+      .querySelectorAll('.email-select')
+      .forEach((checkbox) => {
+        const checkboxElement = checkbox;
+        checkboxElement.checked = selected;
+      });
     this.updateBulkActions();
   }
 
@@ -749,14 +824,19 @@ class EmailList {
    * Update selection state
    */
   updateSelectionState() {
-    const checkboxes = this.elements.emailGrid.querySelectorAll('.email-select');
-    const selectedCheckboxes = this.elements.emailGrid.querySelectorAll('.email-select:checked');
-    
+    const checkboxes =
+      this.elements.emailGrid.querySelectorAll('.email-select');
+    const selectedCheckboxes = this.elements.emailGrid.querySelectorAll(
+      '.email-select:checked'
+    );
+
     if (this.elements.selectAllCheckbox) {
-      this.elements.selectAllCheckbox.indeterminate = 
-        selectedCheckboxes.length > 0 && selectedCheckboxes.length < checkboxes.length;
-      this.elements.selectAllCheckbox.checked = 
-        checkboxes.length > 0 && selectedCheckboxes.length === checkboxes.length;
+      this.elements.selectAllCheckbox.indeterminate =
+        selectedCheckboxes.length > 0 &&
+        selectedCheckboxes.length < checkboxes.length;
+      this.elements.selectAllCheckbox.checked =
+        checkboxes.length > 0 &&
+        selectedCheckboxes.length === checkboxes.length;
     }
   }
 
@@ -765,13 +845,13 @@ class EmailList {
    */
   updateBulkActions() {
     const selectedEmails = this.getSelectedEmails();
-    
+
     if (this.elements.selectedCount) {
       this.elements.selectedCount.textContent = `${selectedEmails.length} selected`;
     }
 
     if (this.elements.bulkActionsPanel) {
-      this.elements.bulkActionsPanel.style.display = 
+      this.elements.bulkActionsPanel.style.display =
         selectedEmails.length > 0 ? 'flex' : 'none';
     }
   }
@@ -782,12 +862,14 @@ class EmailList {
    */
   getSelectedEmails() {
     const selectedIds = [];
-    this.elements.emailGrid.querySelectorAll('.email-select:checked').forEach(checkbox => {
-      const emailItem = checkbox.closest('.email-item');
-      if (emailItem) {
-        selectedIds.push(emailItem.dataset.emailId);
-      }
-    });
+    this.elements.emailGrid
+      .querySelectorAll('.email-select:checked')
+      .forEach((checkbox) => {
+        const emailItem = checkbox.closest('.email-item');
+        if (emailItem) {
+          selectedIds.push(emailItem.dataset.emailId);
+        }
+      });
     return selectedIds;
   }
 
@@ -843,9 +925,9 @@ class EmailList {
 }
 
 // Initialize email list when DOM is loaded
-let emailList;
 document.addEventListener('DOMContentLoaded', () => {
-  emailList = new EmailList();
+  // eslint-disable-next-line no-unused-vars
+  const emailList = new EmailList();
 });
 
 // Export for use in other modules

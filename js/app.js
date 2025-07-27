@@ -14,7 +14,7 @@ class GmailPurgeApp {
       currentAnalysis: null,
       selectedSender: null,
       selectedSubjects: [],
-      lastAnalysisDate: null
+      lastAnalysisDate: null,
     };
 
     this.init();
@@ -26,10 +26,10 @@ class GmailPurgeApp {
   async init() {
     try {
       console.log('Initializing Gmail Purge Application...');
-      
+
       // Wait for DOM to be ready
       if (document.readyState === 'loading') {
-        await new Promise(resolve => {
+        await new Promise((resolve) => {
           document.addEventListener('DOMContentLoaded', resolve);
         });
       }
@@ -54,10 +54,9 @@ class GmailPurgeApp {
 
       console.log('Gmail Purge Application initialized successfully');
       this.showReadyMessage();
-
     } catch (error) {
       console.error('Failed to initialize application:', error);
-      this.showError('Failed to initialize application: ' + error.message);
+      this.showError(`Failed to initialize application: ${error.message}`);
     }
   }
 
@@ -68,7 +67,9 @@ class GmailPurgeApp {
     try {
       // Check storage availability
       if (!StorageHelper.isAvailable()) {
-        throw new Error('Browser storage is not available. Please enable cookies and local storage.');
+        throw new Error(
+          'Browser storage is not available. Please enable cookies and local storage.'
+        );
       }
 
       // Initialize storage with app preferences
@@ -78,7 +79,7 @@ class GmailPurgeApp {
         defaultAnalysisPreset: 'all',
         autoRefreshInterval: 0, // 0 = disabled
         showEmailPreviews: true,
-        compactView: false
+        compactView: false,
       };
 
       const preferences = StorageHelper.getPreferences();
@@ -110,7 +111,10 @@ class GmailPurgeApp {
         this.handleAuthStateChange(isAuthenticated);
       });
 
-      console.log('Authentication initialized. Authenticated:', this.appState.isAuthenticated);
+      console.log(
+        'Authentication initialized. Authenticated:',
+        this.appState.isAuthenticated
+      );
     } catch (error) {
       console.error('Authentication initialization failed:', error);
       throw error;
@@ -126,7 +130,7 @@ class GmailPurgeApp {
       // We just keep references for coordination
       this.components = {
         dashboard: window.dashboard,
-        emailList: window.emailList
+        emailList: window.emailList,
       };
 
       console.log('Components initialized');
@@ -141,9 +145,12 @@ class GmailPurgeApp {
    */
   setupGlobalHandlers() {
     // Handle window resize
-    window.addEventListener('resize', this.debounce(() => {
-      this.handleWindowResize();
-    }, 250));
+    window.addEventListener(
+      'resize',
+      this.debounce(() => {
+        this.handleWindowResize();
+      }, 250)
+    );
 
     // Handle browser back/forward
     window.addEventListener('popstate', (e) => {
@@ -187,7 +194,7 @@ class GmailPurgeApp {
         // Restore non-sensitive state
         this.appState.currentView = savedState.currentView || 'dashboard';
         this.appState.lastAnalysisDate = savedState.lastAnalysisDate;
-        
+
         // Apply theme
         const preferences = StorageHelper.getPreferences();
         if (preferences.theme) {
@@ -308,7 +315,7 @@ class GmailPurgeApp {
       await GmailAuth.signIn();
     } catch (error) {
       console.error('Sign-in failed:', error);
-      this.showError('Sign-in failed: ' + error.message);
+      this.showError(`Sign-in failed: ${error.message}`);
     }
   }
 
@@ -322,7 +329,7 @@ class GmailPurgeApp {
       this.clearSensitiveData();
     } catch (error) {
       console.error('Sign-out failed:', error);
-      this.showError('Sign-out failed: ' + error.message);
+      this.showError(`Sign-out failed: ${error.message}`);
     }
   }
 
@@ -357,12 +364,12 @@ class GmailPurgeApp {
   handleWindowResize() {
     // Update responsive layouts
     this.updateResponsiveLayouts();
-    
+
     // Save window state
     const preferences = StorageHelper.getPreferences();
     preferences.windowSize = {
       width: window.innerWidth,
-      height: window.innerHeight
+      height: window.innerHeight,
     };
     StorageHelper.setPreferences(preferences);
   }
@@ -399,7 +406,10 @@ class GmailPurgeApp {
       // Retry any failed operations
       this.retryFailedOperations();
     } else {
-      this.showMessage('Connection lost. Operating in offline mode.', 'warning');
+      this.showMessage(
+        'Connection lost. Operating in offline mode.',
+        'warning'
+      );
     }
 
     // Update UI to reflect connection status
@@ -428,8 +438,11 @@ class GmailPurgeApp {
     if (preferences.autoRefreshInterval > 0) {
       const lastRefresh = StorageHelper.getItem('lastRefresh');
       const now = Date.now();
-      
-      if (!lastRefresh || (now - lastRefresh) > preferences.autoRefreshInterval * 60000) {
+
+      if (
+        !lastRefresh ||
+        now - lastRefresh > preferences.autoRefreshInterval * 60000
+      ) {
         this.autoRefreshData();
       }
     }
@@ -474,7 +487,7 @@ class GmailPurgeApp {
     if (e.key === 'Escape') {
       // Close any open modals
       const modals = document.querySelectorAll('.modal-overlay');
-      modals.forEach(modal => modal.remove());
+      modals.forEach((modal) => modal.remove());
 
       // Clear email selections
       if (this.components.emailList) {
@@ -511,7 +524,7 @@ class GmailPurgeApp {
    */
   setTheme(theme) {
     document.body.setAttribute('data-theme', theme);
-    
+
     // Save preference
     const preferences = StorageHelper.getPreferences();
     preferences.theme = theme;
@@ -550,7 +563,7 @@ class GmailPurgeApp {
       this.components.dashboard.showError(message);
     } else {
       console.error('App Error:', message);
-      alert('Error: ' + message); // Fallback
+      alert(`Error: ${message}`); // Fallback
     }
   }
 
@@ -579,7 +592,7 @@ class GmailPurgeApp {
       emailCount: this.appState.currentEmails.length,
       hasAnalysis: !!this.appState.currentAnalysis,
       lastAnalysis: this.appState.lastAnalysisDate,
-      memoryUsage: this.getMemoryUsage()
+      memoryUsage: this.getMemoryUsage(),
     };
   }
 
@@ -590,8 +603,10 @@ class GmailPurgeApp {
   getMemoryUsage() {
     return {
       emails: this.appState.currentEmails.length,
-      analysisData: this.appState.currentAnalysis ? Object.keys(this.appState.currentAnalysis).length : 0,
-      cacheSize: StorageHelper.getCacheSize()
+      analysisData: this.appState.currentAnalysis
+        ? Object.keys(this.appState.currentAnalysis).length
+        : 0,
+      cacheSize: StorageHelper.getCacheSize(),
     };
   }
 

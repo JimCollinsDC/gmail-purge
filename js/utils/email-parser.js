@@ -14,7 +14,9 @@ class EmailParser {
       return [];
     }
 
-    return messages.map(message => this.parseMessage(message)).filter(Boolean);
+    return messages
+      .map((message) => this.parseMessage(message))
+      .filter(Boolean);
   }
 
   /**
@@ -29,7 +31,7 @@ class EmailParser {
 
     try {
       const headers = this._extractHeaders(message.payload.headers || []);
-      
+
       return {
         id: message.id,
         threadId: message.threadId,
@@ -48,7 +50,7 @@ class EmailParser {
         isImportant: message.labelIds?.includes('IMPORTANT'),
         isSpam: message.labelIds?.includes('SPAM'),
         isTrash: message.labelIds?.includes('TRASH'),
-        category: this._determineCategory(message.labelIds || [])
+        category: this._determineCategory(message.labelIds || []),
       };
     } catch (error) {
       console.warn('⚠️ Failed to parse message:', message.id, error);
@@ -64,9 +66,9 @@ class EmailParser {
   static groupBySender(emails) {
     const senderMap = new Map();
 
-    emails.forEach(email => {
+    emails.forEach((email) => {
       const senderKey = email.senderEmail.toLowerCase();
-      
+
       if (!senderMap.has(senderKey)) {
         senderMap.set(senderKey, {
           senderEmail: email.senderEmail,
@@ -75,15 +77,15 @@ class EmailParser {
           totalSize: 0,
           dateRange: {
             earliest: email.timestamp,
-            latest: email.timestamp
-          }
+            latest: email.timestamp,
+          },
         });
       }
 
       const senderGroup = senderMap.get(senderKey);
       senderGroup.emails.push(email);
       senderGroup.totalSize += email.sizeEstimate;
-      
+
       // Update date range
       if (email.timestamp < senderGroup.dateRange.earliest) {
         senderGroup.dateRange.earliest = email.timestamp;
@@ -104,9 +106,9 @@ class EmailParser {
   static groupBySubject(emails) {
     const subjectMap = new Map();
 
-    emails.forEach(email => {
+    emails.forEach((email) => {
       const subjectKey = this._normalizeSubject(email.subject);
-      
+
       if (!subjectMap.has(subjectKey)) {
         subjectMap.set(subjectKey, {
           subject: email.subject,
@@ -115,15 +117,15 @@ class EmailParser {
           totalSize: 0,
           dateRange: {
             earliest: email.timestamp,
-            latest: email.timestamp
-          }
+            latest: email.timestamp,
+          },
         });
       }
 
       const subjectGroup = subjectMap.get(subjectKey);
       subjectGroup.emails.push(email);
       subjectGroup.totalSize += email.sizeEstimate;
-      
+
       // Update date range
       if (email.timestamp < subjectGroup.dateRange.earliest) {
         subjectGroup.dateRange.earliest = email.timestamp;
@@ -144,7 +146,7 @@ class EmailParser {
    */
   static _extractHeaders(headers) {
     const headerMap = {};
-    headers.forEach(header => {
+    headers.forEach((header) => {
       headerMap[header.name.toLowerCase()] = header.value;
     });
     return headerMap;
@@ -156,7 +158,7 @@ class EmailParser {
    */
   static _parseDate(dateString) {
     if (!dateString) return null;
-    
+
     try {
       return new Date(dateString);
     } catch (error) {
@@ -180,7 +182,7 @@ class EmailParser {
    */
   static _parseSender(fromHeader) {
     if (!fromHeader) return 'Unknown Sender';
-    
+
     // Clean up the from header
     return fromHeader.replace(/[<>]/g, '').trim();
   }
@@ -191,13 +193,13 @@ class EmailParser {
    */
   static _extractEmail(fromHeader) {
     if (!fromHeader) return '';
-    
+
     // Look for email in angle brackets first
     const angleMatch = fromHeader.match(/<([^>]+)>/);
     if (angleMatch) {
       return angleMatch[1].trim().toLowerCase();
     }
-    
+
     // If no angle brackets, assume the whole string is an email
     const emailMatch = fromHeader.match(/[\w.-]+@[\w.-]+\.\w+/);
     return emailMatch ? emailMatch[0].toLowerCase() : fromHeader.toLowerCase();
@@ -209,19 +211,19 @@ class EmailParser {
    */
   static _extractName(fromHeader) {
     if (!fromHeader) return '';
-    
+
     // If there are angle brackets, the name is before them
     const angleMatch = fromHeader.match(/^([^<]+)<[^>]+>$/);
     if (angleMatch) {
       return angleMatch[1].trim().replace(/^["']|["']$/g, '');
     }
-    
+
     // If no angle brackets, use the part before @ as name
     const atIndex = fromHeader.indexOf('@');
     if (atIndex > 0) {
       return fromHeader.substring(0, atIndex).trim();
     }
-    
+
     return fromHeader.trim();
   }
 
@@ -231,7 +233,7 @@ class EmailParser {
    */
   static _cleanSubject(subject) {
     if (!subject) return '(No Subject)';
-    
+
     // Remove excessive whitespace
     return subject.replace(/\s+/g, ' ').trim();
   }
@@ -242,12 +244,14 @@ class EmailParser {
    */
   static _normalizeSubject(subject) {
     if (!subject) return '(no subject)';
-    
-    return subject
-      .toLowerCase()
-      .replace(/^(re|fwd|fw):\s*/gi, '')
-      .replace(/\s+/g, ' ')
-      .trim() || '(no subject)';
+
+    return (
+      subject
+        .toLowerCase()
+        .replace(/^(re|fwd|fw):\s*/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim() || '(no subject)'
+    );
   }
 
   /**
@@ -256,12 +260,12 @@ class EmailParser {
    */
   static _hasAttachments(payload) {
     if (!payload) return false;
-    
+
     // Check if any part has a filename
     const checkParts = (parts) => {
       if (!Array.isArray(parts)) return false;
-      
-      return parts.some(part => {
+
+      return parts.some((part) => {
         if (part.filename && part.filename.length > 0) {
           return true;
         }
