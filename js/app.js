@@ -82,9 +82,9 @@ class GmailPurgeApp {
         compactView: false,
       };
 
-      const preferences = StorageHelper.getPreferences();
+      const preferences = StorageHelper.loadPreferences();
       if (!preferences || Object.keys(preferences).length === 0) {
-        StorageHelper.setPreferences(defaultPreferences);
+        StorageHelper.savePreferences(defaultPreferences);
       }
 
       console.log('Storage initialized');
@@ -196,7 +196,7 @@ class GmailPurgeApp {
         this.appState.lastAnalysisDate = savedState.lastAnalysisDate;
 
         // Apply theme
-        const preferences = StorageHelper.getPreferences();
+        const preferences = StorageHelper.loadPreferences();
         if (preferences.theme) {
           this.setTheme(preferences.theme);
         }
@@ -366,12 +366,12 @@ class GmailPurgeApp {
     this.updateResponsiveLayouts();
 
     // Save window state
-    const preferences = StorageHelper.getPreferences();
+    const preferences = StorageHelper.loadPreferences();
     preferences.windowSize = {
       width: window.innerWidth,
       height: window.innerHeight,
     };
-    StorageHelper.setPreferences(preferences);
+    StorageHelper.savePreferences(preferences);
   }
 
   /**
@@ -434,7 +434,7 @@ class GmailPurgeApp {
    */
   handleTabActivation() {
     // Check if we need to refresh data
-    const preferences = StorageHelper.getPreferences();
+    const preferences = StorageHelper.loadPreferences();
     if (preferences.autoRefreshInterval > 0) {
       const lastRefresh = StorageHelper.getItem('lastRefresh');
       const now = Date.now();
@@ -526,9 +526,9 @@ class GmailPurgeApp {
     document.body.setAttribute('data-theme', theme);
 
     // Save preference
-    const preferences = StorageHelper.getPreferences();
+    const preferences = StorageHelper.loadPreferences();
     preferences.theme = theme;
-    StorageHelper.setPreferences(preferences);
+    StorageHelper.savePreferences(preferences);
 
     console.log('Theme set to:', theme);
   }
