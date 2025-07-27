@@ -335,6 +335,7 @@ if (typeof window !== 'undefined') {
   global.GmailAPI = GmailAPI;
 }
 
-// Also export for ES6 modules
-export default gmailAPI;
-export { GmailAPI };
+// Export for Node.js/testing environment
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { GmailAPI, gmailAPI };
+}

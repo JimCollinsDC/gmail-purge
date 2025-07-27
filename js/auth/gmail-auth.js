@@ -250,6 +250,7 @@ if (typeof window !== 'undefined') {
   global.GmailAuth = GmailAuth;
 }
 
-// Also export for ES6 modules
-export default gmailAuth;
-export { GmailAuth };
+// Export for Node.js/testing environment
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { GmailAuth, gmailAuth };
+}
