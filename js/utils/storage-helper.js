@@ -5,6 +5,22 @@
 
 class StorageHelper {
   /**
+   * Check if browser storage is available
+   * @returns {boolean} Storage availability status
+   */
+  static isAvailable() {
+    try {
+      const test = '__storage_test__';
+      localStorage.setItem(test, test);
+      localStorage.removeItem(test);
+      return true;
+    } catch (error) {
+      console.warn('⚠️ Browser storage is not available:', error);
+      return false;
+    }
+  }
+
+  /**
    * Save user preferences
    * @param {Object} preferences - User preferences object
    */
