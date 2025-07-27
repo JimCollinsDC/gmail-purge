@@ -94,13 +94,81 @@ This document contains general coding standards and architectural guidelines for
 - Respect user privacy preferences
 - Implement secure credential storage
 
+### Testing Security
+- **Never include real credentials in test files**
+- Use mock data and fake API keys in tests
+- Ensure test databases are isolated from production
+- **Test files should not contain sensitive information**
+- Use environment variables for test configuration
+- Mock authentication flows rather than using real tokens
+
 ## Testing Requirements
 
 ### Unit Tests
 - Test all business logic thoroughly
-- Mock API responses
+- Mock API responses using tools like Jest, Sinon, or native mocking
 - Test error handling scenarios
 - Maintain > 80% code coverage
+- **Recommended Testing Stack:**
+  - **Jest**: Primary testing framework for JavaScript
+  - **Testing Library**: For DOM testing (if applicable)
+  - **Sinon**: For mocking and stubbing
+  - **Istanbul/nyc**: For code coverage reporting
+- **Unit Test Structure:**
+  ```javascript
+  // Example test structure
+  describe('ComponentName', () => {
+    beforeEach(() => {
+      // Setup code
+    });
+
+    it('should handle valid input correctly', () => {
+      // Arrange
+      const input = 'test data';
+      
+      // Act
+      const result = functionUnderTest(input);
+      
+      // Assert
+      expect(result).toBe(expectedOutput);
+    });
+
+    it('should throw error for invalid input', () => {
+      // Test error scenarios
+      expect(() => functionUnderTest(null)).toThrow();
+    });
+  });
+  ```
+- **Testing npm Scripts** (add to package.json):
+  ```json
+  {
+    "scripts": {
+      "test": "jest",
+      "test:watch": "jest --watch",
+      "test:coverage": "jest --coverage",
+      "test:ci": "jest --ci --coverage --watchAll=false"
+    }
+  }
+  ```
+- **Jest Configuration** (jest.config.js or package.json):
+  ```javascript
+  module.exports = {
+    testEnvironment: 'jsdom', // For browser-based code
+    collectCoverageFrom: [
+      'js/**/*.js',
+      '!js/**/*.test.js',
+      '!**/node_modules/**'
+    ],
+    coverageThreshold: {
+      global: {
+        branches: 80,
+        functions: 80,
+        lines: 80,
+        statements: 80
+      }
+    }
+  };
+  ```
 
 ### Integration Tests
 - Test authentication flow end-to-end
@@ -120,6 +188,15 @@ This document contains general coding standards and architectural guidelines for
 - Use pull requests for code review
 - Keep commits atomic and focused
 - Write descriptive branch names
+- **Always include a comprehensive `.gitignore` file** to exclude:
+  - `node_modules/` directory
+  - Build artifacts (`dist/`, `build/`)
+  - Environment files (`.env`, `.env.local`)
+  - IDE/Editor files (`.vscode/settings.json`, `*.swp`)
+  - OS generated files (`.DS_Store`, `Thumbs.db`)
+  - Log files (`*.log`, `logs/`)
+  - Temporary files (`tmp/`, `temp/`)
+  - Coverage reports (`coverage/`)
 
 ### API Best Practices (Browser)
 - Use appropriate JavaScript client libraries via npm or CDN
@@ -295,6 +372,76 @@ Every project must include a comprehensive README.md with:
 - Provide usage examples and code samples
 - Include troubleshooting section
 - Create installation and setup guides
+
+### Repository Configuration Files
+
+#### .gitignore Requirements
+Every repository must include a comprehensive `.gitignore` file containing:
+
+```gitignore
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE/Editor files
+.vscode/settings.json
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory
+coverage/
+
+# Temporary folders
+tmp/
+temp/
+```
+
+#### Package.json Testing Scripts
+Ensure your `package.json` includes these essential testing scripts:
+
+```json
+{
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:ci": "jest --ci --coverage --watchAll=false",
+    "lint": "eslint js/",
+    "lint:fix": "eslint js/ --fix",
+    "format": "prettier --write js/"
+  }
+}
+```
 
 ## Prohibited Practices
 - Never store passwords or sensitive credentials in plain text
