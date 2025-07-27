@@ -5,7 +5,8 @@
 
 const APP_CONFIG = {
   // Google OAuth Configuration
-  GOOGLE_CLIENT_ID: 'YOUR_GOOGLE_CLIENT_ID_HERE', // Replace with your actual client ID
+  GOOGLE_CLIENT_ID:
+    '321568043136-rloeh1t90hcgav1p08s9euqk6tg16rft.apps.googleusercontent.com', // Replace with your actual client ID
 
   // Gmail API Configuration
   GMAIL_SCOPES: ['https://www.googleapis.com/auth/gmail.readonly'],

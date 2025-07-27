@@ -128,13 +128,25 @@ class GmailAuth {
   async _loadGoogleAPI() {
     return new Promise((resolve, reject) => {
       if (typeof gapi === 'undefined') {
-        reject(new Error('Google API library not loaded'));
+        reject(
+          new Error(
+            'Google API library not loaded. Please check your internet connection.'
+          )
+        );
         return;
       }
 
-      gapi.load('auth2', {
-        callback: resolve,
-        onerror: () => reject(new Error('Failed to load Google Auth2')),
+      // Load both auth2 and client libraries
+      gapi.load('auth2:client', {
+        callback: () => {
+          console.log('✅ Google Auth2 API loaded successfully');
+          resolve();
+        },
+        onerror: (error) => {
+          const errorMessage =
+            error?.message || error?.toString() || 'Unknown API loading error';
+          reject(new Error(`Failed to load Google Auth2: ${errorMessage}`));
+        },
       });
     });
   }
@@ -145,10 +157,20 @@ class GmailAuth {
    */
   async _initializeAuth() {
     try {
+      // First initialize the client
+      await gapi.client.init({
+        discoveryDocs: APP_CONFIG.DISCOVERY_DOCS,
+      });
+
+      // Then initialize auth2
       this.authInstance = await gapi.auth2.init({
         client_id: APP_CONFIG.GOOGLE_CLIENT_ID,
         scope: APP_CONFIG.GMAIL_SCOPES.join(' '),
       });
+
+      if (!this.authInstance) {
+        throw new Error('Failed to initialize Google Auth2 instance');
+      }
 
       // Check if user is already signed in
       this.isSignedIn = this.authInstance.isSignedIn.get();
@@ -156,7 +178,9 @@ class GmailAuth {
         this.currentUser = this.authInstance.currentUser.get();
       }
     } catch (error) {
-      throw new Error(`Auth initialization failed: ${error.message}`);
+      const errorMessage =
+        error?.message || error?.toString() || 'Unknown authentication error';
+      throw new Error(`Auth initialization failed: ${errorMessage}`);
     }
   }
 
