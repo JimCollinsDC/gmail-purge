@@ -58,6 +58,35 @@ class StorageHelper {
   }
 
   /**
+   * Get item from localStorage
+   * @param {string} key - Storage key
+   * @returns {Object|null} Parsed item or null if not found
+   */
+  static getItem(key) {
+    try {
+      const item = localStorage.getItem(key);
+      return item ? JSON.parse(item) : null;
+    } catch (error) {
+      console.error(`❌ Failed to get item '${key}':`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Set item in localStorage
+   * @param {string} key - Storage key
+   * @param {any} value - Value to store
+   */
+  static setItem(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+      console.log(`💾 Item '${key}' saved to storage`);
+    } catch (error) {
+      console.error(`❌ Failed to set item '${key}':`, error);
+    }
+  }
+
+  /**
    * Cache analysis results
    * @param {Object} analysisData - Analysis results to cache
    */

@@ -321,6 +321,20 @@ class GmailAPI {
   }
 }
 
-// Create global instance
-// eslint-disable-next-line no-unused-vars
+// Create global instance and expose it globally
 const gmailAPI = new GmailAPI();
+
+// Expose to global scope (works in both browser and Node.js)
+if (typeof window !== 'undefined') {
+  // Browser environment
+  window.gmailAPI = gmailAPI;
+  window.GmailAPI = GmailAPI;
+} else if (typeof global !== 'undefined') {
+  // Node.js environment
+  global.gmailAPI = gmailAPI;
+  global.GmailAPI = GmailAPI;
+}
+
+// Also export for ES6 modules
+export default gmailAPI;
+export { GmailAPI };

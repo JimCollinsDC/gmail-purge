@@ -134,9 +134,54 @@ npm start
 
 ### First Time Setup
 
+#### 1. Google API Configuration (Required)
+
+Before using the application, you must configure your Google Client ID:
+
+##### Step 1: Create a Google Cloud Project
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
+2. Sign in with your Google account
+3. Click "Create Project" or select an existing project
+4. Give your project a name (e.g., "Gmail Purge App")
+
+##### Step 2: Enable the Gmail API
+
+1. In your Google Cloud project, go to **APIs & Services** → **Library**
+2. Search for "Gmail API"
+3. Click on "Gmail API" and click **"Enable"**
+
+##### Step 3: Create OAuth 2.0 Credentials
+
+1. Go to **APIs & Services** → **Credentials**
+2. Click **"+ CREATE CREDENTIALS"** → **"OAuth client ID"**
+3. If prompted, configure the OAuth consent screen first:
+   - Choose **"External"** (unless you have a Google Workspace)
+   - Fill in required fields (App name, User support email, Developer email)
+   - Add your domain (for development, you can use `localhost`)
+4. For Application type, select **"Web application"**
+5. Add authorized origins:
+   - `http://localhost:3000` (for development)
+   - Your production domain (when ready)
+6. Click **"Create"**
+
+##### Step 4: Configure Your App
+
+1. Copy the **Client ID** from the credentials page
+2. Open `js/config/app-config.js` in your project
+3. Replace `'YOUR_GOOGLE_CLIENT_ID_HERE'` with your actual Client ID:
+
+   ```javascript
+   GOOGLE_CLIENT_ID: 'your-actual-client-id-from-google-cloud.apps.googleusercontent.com',
+   ```
+
+#### 2. Application Usage
+
 1. **Authentication**: Click "Sign In with Gmail" and grant read-only permissions
 2. **Analysis**: Select an analysis preset (start with "Recent Month" for faster results)
 3. **Explore**: Browse senders, subjects, and insights to understand your email patterns
+
+> **Security Note**: The Client ID is safe to expose in client-side code - it's designed to be public and different from Client Secrets.
 
 ## 🛠️ Development
 

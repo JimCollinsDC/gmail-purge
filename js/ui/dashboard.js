@@ -103,9 +103,9 @@ class Dashboard {
       this.updateAnalyzeButton(true);
 
       // Check authentication
-      if (!GmailAuth.isAuthenticated()) {
+      if (!gmailAuth.isUserSignedIn()) {
         this.showLoading('Please sign in to Gmail...');
-        await GmailAuth.signIn();
+        await gmailAuth.signIn();
       }
 
       // Fetch emails based on preset

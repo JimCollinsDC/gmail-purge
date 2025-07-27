@@ -100,15 +100,20 @@ class GmailPurgeApp {
   async initializeAuth() {
     try {
       // Initialize Gmail authentication
-      await GmailAuth.init();
+      await gmailAuth.initialize();
 
       // Check if user is already authenticated
-      this.appState.isAuthenticated = GmailAuth.isAuthenticated();
+      this.appState.isAuthenticated = gmailAuth.isUserSignedIn();
 
       // Set up auth state listeners
-      GmailAuth.onAuthStateChanged((isAuthenticated) => {
-        this.appState.isAuthenticated = isAuthenticated;
-        this.handleAuthStateChange(isAuthenticated);
+      window.addEventListener('gmailAuthSuccess', (_event) => {
+        this.appState.isAuthenticated = true;
+        this.handleAuthStateChange(true);
+      });
+
+      window.addEventListener('gmailAuthSignOut', () => {
+        this.appState.isAuthenticated = false;
+        this.handleAuthStateChange(false);
       });
 
       console.log(
@@ -286,7 +291,7 @@ class GmailPurgeApp {
    */
   async displayUserInfo() {
     try {
-      const userInfo = await GmailAuth.getUserInfo();
+      const userInfo = gmailAuth.getCurrentUser();
       if (userInfo) {
         const userElement = document.getElementById('user-info');
         if (userElement) {
@@ -312,7 +317,7 @@ class GmailPurgeApp {
   async signIn() {
     try {
       this.showMessage('Signing in...', 'info');
-      await GmailAuth.signIn();
+      await gmailAuth.signIn();
     } catch (error) {
       console.error('Sign-in failed:', error);
       this.showError(`Sign-in failed: ${error.message}`);
@@ -325,7 +330,7 @@ class GmailPurgeApp {
   async signOut() {
     try {
       this.showMessage('Signing out...', 'info');
-      await GmailAuth.signOut();
+      await gmailAuth.signOut();
       this.clearSensitiveData();
     } catch (error) {
       console.error('Sign-out failed:', error);

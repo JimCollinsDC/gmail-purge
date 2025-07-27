@@ -13,6 +13,14 @@ node_modules/
 .env.test.local
 .env.production.local
 
+# Google API credentials and config overrides
+app-config.local.js
+config.local.js
+credentials.json
+client_secret*.json
+service-account*.json
+*-credentials.json
+
 # IDE/Editor files
 .vscode/settings.json
 *.swp

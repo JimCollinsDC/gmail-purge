@@ -236,6 +236,20 @@ class GmailAuth {
   }
 }
 
-// Create global instance
-// eslint-disable-next-line no-unused-vars
+// Create global instance and expose it globally
 const gmailAuth = new GmailAuth();
+
+// Expose to global scope (works in both browser and Node.js)
+if (typeof window !== 'undefined') {
+  // Browser environment
+  window.gmailAuth = gmailAuth;
+  window.GmailAuth = GmailAuth;
+} else if (typeof global !== 'undefined') {
+  // Node.js environment
+  global.gmailAuth = gmailAuth;
+  global.GmailAuth = GmailAuth;
+}
+
+// Also export for ES6 modules
+export default gmailAuth;
+export { GmailAuth };
