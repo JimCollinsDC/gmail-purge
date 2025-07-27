@@ -4,7 +4,8 @@
   "description": "Gmail inbox analysis and reporting tool - read-only",
   "main": "index.html",
   "scripts": {
-    "dev": "live-server --port=3000",
+    "start": "http-server -p 3000 -o",
+    "dev": "http-server -p 3000 -o",
     "build": "npm run lint && npm run format",
     "lint": "eslint js/**/*.js",
     "lint:fix": "eslint js/**/*.js --fix",
@@ -16,7 +17,7 @@
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-import": "^2.28.0",
-    "live-server": "^1.2.2",
+    "http-server": "^14.1.1",
     "prettier": "^3.0.0"
   },
   "keywords": [
