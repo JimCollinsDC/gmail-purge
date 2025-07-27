@@ -4,7 +4,7 @@
   "description": "Gmail inbox analysis and reporting tool - read-only",
   "main": "index.html",
   "scripts": {
-    "start": "http-server -p 3000 -o",
+    "start": "node scripts/start-server.js",
     "dev": "http-server -p 3000 -o",
     "build": "npm run lint && npm run format",
     "test": "vitest",

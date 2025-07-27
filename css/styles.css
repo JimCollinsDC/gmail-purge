@@ -312,6 +312,98 @@ body {
   text-align: left;
 }
 
+/* Configuration Notice */
+.config-notice {
+  background: var(--surface-color);
+  border: 2px solid var(--warning-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-xl);
+  max-width: 700px;
+  margin: var(--spacing-lg) auto 0;
+  text-align: center;
+}
+
+.config-notice .config-icon {
+  font-size: 2rem;
+  color: var(--warning-color);
+  margin-bottom: var(--spacing-md);
+}
+
+.config-notice h3 {
+  color: var(--warning-color);
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: var(--font-size-lg);
+}
+
+.config-notice p {
+  margin: 0 0 var(--spacing-md) 0;
+  color: var(--text-secondary);
+}
+
+.config-notice .setup-steps {
+  text-align: left;
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-lg);
+  margin: var(--spacing-md) 0;
+  counter-reset: step-counter;
+}
+
+.config-notice .setup-steps li {
+  margin: var(--spacing-sm) 0;
+  padding-left: var(--spacing-md);
+  position: relative;
+}
+
+.config-notice .setup-steps li::before {
+  counter-increment: step-counter;
+  content: counter(step-counter);
+  position: absolute;
+  left: -var(--spacing-lg);
+  top: 0;
+  background: var(--primary-color);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.config-notice code {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  padding: 2px 6px;
+  font-family: 'Courier New', monospace;
+  font-size: var(--font-size-sm);
+  color: var(--primary-color);
+}
+
+.config-notice .help-links {
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+
+.config-notice .help-links p {
+  margin: var(--spacing-sm) 0;
+}
+
+.config-notice a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.config-notice a:hover {
+  text-decoration: underline;
+}
+
 /* Dashboard */
 .dashboard {
   display: flex;

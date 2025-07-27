@@ -99,6 +99,13 @@ class GmailPurgeApp {
    */
   async initializeAuth() {
     try {
+      // Check if configuration is valid before initializing
+      if (!validateConfig()) {
+        console.log('⚙️ Configuration needed - showing setup instructions');
+        this.showConfigurationMessage();
+        return;
+      }
+
       // Initialize Gmail authentication
       await gmailAuth.initialize();
 
@@ -582,6 +589,35 @@ class GmailPurgeApp {
       this.components.dashboard.showMessage(message, type);
     } else {
       console.log(`${type.toUpperCase()}: ${message}`);
+    }
+  }
+
+  /**
+   * Show configuration setup message
+   */
+  showConfigurationMessage() {
+    // Show the configuration notice
+    const configNotice = document.getElementById('config-notice');
+    if (configNotice) {
+      configNotice.style.display = 'block';
+    }
+
+    // Hide the auth button since it won't work without configuration
+    const authButton = document.getElementById('auth-button');
+    if (authButton) {
+      authButton.style.display = 'none';
+    }
+
+    // Update the auth button text to indicate configuration needed
+    const welcomeContent = document.querySelector('.welcome-content h2');
+    if (welcomeContent) {
+      welcomeContent.textContent = 'Configuration Required';
+    }
+
+    const welcomeDesc = document.querySelector('.welcome-content > p');
+    if (welcomeDesc) {
+      welcomeDesc.textContent =
+        'Please configure your Google Client ID to get started with Gmail analysis.';
     }
   }
 

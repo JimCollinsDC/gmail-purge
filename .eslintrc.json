@@ -37,5 +37,13 @@
     "gmailAPI": "writable",
     "dashboard": "writable",
     "emailList": "writable"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["scripts/**/*.js"],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ]
 }

@@ -98,3 +98,8 @@ const validateConfig = () => {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { APP_CONFIG, validateConfig };
 }
+
+// Make available globally for browser
+if (typeof window !== 'undefined') {
+  window.validateConfig = validateConfig;
+}
