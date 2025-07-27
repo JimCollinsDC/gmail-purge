@@ -86,9 +86,6 @@ const APP_CONFIG = {
 // Validation function for configuration
 const validateConfig = () => {
   if (APP_CONFIG.GOOGLE_CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID_HERE') {
-    console.warn(
-      '⚠️ Gmail Purge: Please configure your Google Client ID in js/config/app-config.js'
-    );
     return false;
   }
   return true;
