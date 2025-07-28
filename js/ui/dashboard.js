@@ -171,7 +171,7 @@ class Dashboard {
 
     // Get detailed message information for analysis
     if (messages.length > 0) {
-      const messageIds = messages.slice(0, preset.maxResults || 5000).map(m => m.id);
+      const messageIds = messages.slice(0, preset.maxResults || 100).map(m => m.id);
       return await gmailAPI.getMessageDetails(messageIds, updateProgress);
     }
 

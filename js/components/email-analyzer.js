@@ -259,7 +259,8 @@ class EmailAnalyzer {
       const senderKey = email.senderEmail || email.sender || 'unknown@unknown.com';
       if (!senderSizeMap.has(senderKey)) {
         senderSizeMap.set(senderKey, {
-          sender: email.senderName || email.sender || 'Unknown',
+          name: email.senderName || email.sender || 'Unknown',
+          email: email.senderEmail || senderKey,
           totalSize: 0,
           count: 0,
           avgSize: 0,
@@ -324,11 +325,11 @@ class EmailAnalyzer {
         timeline: timeAnalysis,
         categories: categoryAnalysis,
         insights: this.generateInsights(emails, {
-          senderAnalysis,
-          subjectAnalysis,
-          sizeAnalysis,
-          timeAnalysis,
-          categoryAnalysis,
+          senders: senderAnalysis,
+          subjects: subjectAnalysis,
+          sizes: sizeAnalysis,
+          timeline: timeAnalysis,
+          categories: categoryAnalysis,
         }),
       };
 
@@ -535,8 +536,8 @@ class EmailAnalyzer {
     const insights = [];
 
     // Top sender insight
-    if (analyses.senderAnalysis.topSenders.length > 0) {
-      const topSender = analyses.senderAnalysis.topSenders[0];
+    if (analyses.senders.topSenders.length > 0) {
+      const topSender = analyses.senders.topSenders[0];
       const percentage = (topSender.count / emails.length) * 100;
       let severity = 'low';
       if (percentage > 20) {
@@ -559,7 +560,7 @@ class EmailAnalyzer {
       insights.push({
         type: 'storage',
         title: 'Largest Storage User',
-        description: `${Formatters.formatSender(topStorageUser.sender.name, topStorageUser.sender.email)} uses ${Formatters.formatFileSize(topStorageUser.totalSize)} of storage`,
+        description: `${Formatters.formatSender(topStorageUser.name, topStorageUser.email)} uses ${Formatters.formatFileSize(topStorageUser.totalSize)} of storage`,
         severity:
           topStorageUser.totalSize > 100 * 1024 * 1024 ? 'high' : 'medium',
       });
