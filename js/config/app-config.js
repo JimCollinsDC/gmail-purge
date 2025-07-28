@@ -17,7 +17,7 @@ const APP_CONFIG = {
   ],
 
   // Application Settings
-  MAX_RESULTS_PER_BATCH: 100,
+  MAX_RESULTS_PER_BATCH: 20,
   MAX_CONCURRENT_REQUESTS: 5,
   API_RATE_LIMIT_DELAY: 100, // milliseconds
 

@@ -1,0 +1,8 @@
+{
+  "name": "gmail-purge-dev-server",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "python -m http.server 8000",
+    "dev-node": "npx http-server -p 8000 -c-1"
+  }
+}

@@ -29,13 +29,13 @@ class EmailAnalyzer {
 
     // Group emails by sender
     emails.forEach((email) => {
-      const senderKey = EmailParser.getSenderKey(email.from);
-      const senderInfo = EmailParser.parseSender(email.from);
-
+      // Use the already parsed sender email as the key
+      const senderKey = email.senderEmail || email.sender || 'unknown@unknown.com';
+      
       if (!senderMap.has(senderKey)) {
         senderMap.set(senderKey, {
-          name: senderInfo.name,
-          email: senderInfo.email,
+          name: email.senderName || email.sender || 'Unknown',
+          email: email.senderEmail || senderKey,
           emails: [],
           totalSize: 0,
           categories: new Set(),
@@ -148,8 +148,8 @@ class EmailAnalyzer {
 
       const subjectGroup = subjectMap.get(normalizedSubject);
       subjectGroup.emails.push(email);
-      subjectGroup.senders.add(EmailParser.getSenderKey(email.from));
-      subjectGroup.totalSize += email.size || 0;
+      subjectGroup.senders.add(email.senderEmail || email.sender || 'unknown@unknown.com');
+      subjectGroup.totalSize += email.sizeEstimate || 0;
 
       // Update date range
       const emailDate = new Date(email.date);
@@ -180,7 +180,7 @@ class EmailAnalyzer {
         const patternGroup = patternMap.get(pattern);
         patternGroup.count++;
         patternGroup.examples.add(subject);
-        patternGroup.senders.add(EmailParser.getSenderKey(email.from));
+        patternGroup.senders.add(email.senderEmail || email.sender || 'unknown@unknown.com');
       }
     });
 
@@ -244,7 +244,7 @@ class EmailAnalyzer {
     const senderSizeMap = new Map();
 
     emails.forEach((email) => {
-      const size = email.size || 0;
+      const size = email.sizeEstimate || 0;
       totalSize += size;
 
       // Find size range
@@ -256,10 +256,10 @@ class EmailAnalyzer {
       }
 
       // Track sender sizes
-      const senderKey = EmailParser.getSenderKey(email.from);
+      const senderKey = email.senderEmail || email.sender || 'unknown@unknown.com';
       if (!senderSizeMap.has(senderKey)) {
         senderSizeMap.set(senderKey, {
-          sender: EmailParser.parseSender(email.from),
+          sender: email.senderName || email.sender || 'Unknown',
           totalSize: 0,
           count: 0,
           avgSize: 0,

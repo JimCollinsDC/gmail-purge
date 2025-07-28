@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gmail Purge - Email Analysis Tool</title>
+    <!-- Content Security Policy for Google Identity Services -->
+    <!-- Updated for new Google Identity Services (GIS) library -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:; script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:; style-src 'self' 'unsafe-inline' https: data:; img-src 'self' data: https: blob:; font-src 'self' https: data:; connect-src 'self' https: wss:; frame-src 'self' https:; object-src 'none'; base-uri 'self';">
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="stylesheet" href="css/styles.css" />
     <link
@@ -276,9 +279,13 @@
 
     <!-- Google APIs -->
     <script src="https://apis.google.com/js/api.js"></script>
+    <!-- Google Identity Services (GIS) - replaces deprecated gapi.auth2 -->
+    <script src="https://accounts.google.com/gsi/client"></script>
 
     <!-- Application Scripts -->
     <script src="js/config/app-config.js"></script>
+    <script src="js/utils/auth-debug.js"></script>
+    <script src="js/utils/popup-helper.js"></script>
     <script src="js/auth/gmail-auth.js"></script>
     <script src="js/api/gmail-api.js"></script>
     <script src="js/utils/email-parser.js"></script>

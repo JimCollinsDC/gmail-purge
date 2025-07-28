@@ -1,17 +1,19 @@
 /**
  * Gmail Authentication Handler
- * Manages OAuth 2.0 authentication with Google Gmail API
+ * Uses Google Identity Services (GIS) - the new authentication library
+ * Replaces deprecated gapi.auth2
  */
 
 class GmailAuth {
   constructor() {
     this.isSignedIn = false;
     this.currentUser = null;
-    this.authInstance = null;
+    this.accessToken = null;
+    this.tokenClient = null;
   }
 
   /**
-   * Initialize Google API and set up authentication
+   * Initialize Google Identity Services and set up authentication
    * @returns {Promise<boolean>} Success status
    */
   async initialize() {
@@ -23,14 +25,11 @@ class GmailAuth {
         );
       }
 
-      // Load Google API
+      // Load Google API client library
       await this._loadGoogleAPI();
 
-      // Initialize auth
-      await this._initializeAuth();
-
-      // Set up auth state listener
-      this._setupAuthListener();
+      // Initialize Google Identity Services
+      await this._initializeGIS();
 
       console.log('✅ Gmail Auth initialized successfully');
       return true;
@@ -42,16 +41,43 @@ class GmailAuth {
   }
 
   /**
-   * Sign in to Gmail
+   * Sign in to Gmail using Google Identity Services
    * @returns {Promise<boolean>} Success status
    */
   async signIn() {
     try {
-      if (!this.authInstance) {
-        throw new Error('Authentication not initialized');
+      if (!this.tokenClient) {
+        throw new Error('Google Identity Services not initialized');
       }
 
-      await this.authInstance.signIn();
+      // Request access token with better error handling
+      await new Promise((resolve, reject) => {
+        this.tokenClient.callback = (response) => {
+          if (response.error) {
+            // Handle specific OAuth errors
+            if (response.error === 'popup_closed_by_user') {
+              reject(new Error('Sign-in was cancelled. Please try again.'));
+            } else if (response.error === 'access_denied') {
+              reject(new Error('Access denied. Please grant permissions to analyze your Gmail account.'));
+            } else {
+              reject(new Error(`Authentication failed: ${response.error}`));
+            }
+            return;
+          }
+          
+          this.accessToken = response.access_token;
+          this.isSignedIn = true;
+          this._onSignIn();
+          resolve();
+        };
+        
+        // Use hint to potentially skip account chooser if user has a preferred account
+        this.tokenClient.requestAccessToken({ 
+          prompt: '',
+          hint: localStorage.getItem('gmail_user_hint') || undefined
+        });
+      });
+
       console.log('✅ User signed in successfully');
       return true;
     } catch (error) {
@@ -67,11 +93,22 @@ class GmailAuth {
    */
   async signOut() {
     try {
-      if (!this.authInstance) {
-        throw new Error('Authentication not initialized');
+      if (this.accessToken) {
+        // Revoke the access token
+        await fetch(`https://oauth2.googleapis.com/revoke?token=${this.accessToken}`, {
+          method: 'POST',
+          headers: {
+            'Content-type': 'application/x-www-form-urlencoded'
+          }
+        });
       }
 
-      await this.authInstance.signOut();
+      // Clear auth state
+      this.accessToken = null;
+      this.isSignedIn = false;
+      this.currentUser = null;
+      this._onSignOut();
+
       console.log('✅ User signed out successfully');
       return true;
     } catch (error) {
@@ -81,21 +118,32 @@ class GmailAuth {
   }
 
   /**
-   * Get current user information
+   * Get current user information from Gmail API
    * @returns {Object|null} User information
    */
-  getCurrentUser() {
-    if (!this.isSignedIn || !this.currentUser) {
+  async getCurrentUser() {
+    if (!this.isSignedIn || !this.accessToken) {
       return null;
     }
 
-    const profile = this.currentUser.getBasicProfile();
-    return {
-      id: profile.getId(),
-      name: profile.getName(),
-      email: profile.getEmail(),
-      imageUrl: profile.getImageUrl(),
-    };
+    try {
+      // Use the Gmail API to get user profile information
+      const response = await gapi.client.gmail.users.getProfile({
+        userId: 'me'
+      });
+      
+      const profile = response.result;
+      this.currentUser = {
+        email: profile.emailAddress,
+        messagesTotal: profile.messagesTotal,
+        threadsTotal: profile.threadsTotal
+      };
+      
+      return this.currentUser;
+    } catch (error) {
+      console.error('Failed to get user profile:', error);
+      return null;
+    }
   }
 
   /**
@@ -103,12 +151,7 @@ class GmailAuth {
    * @returns {string|null} Access token
    */
   getAuthToken() {
-    if (!this.isSignedIn || !this.currentUser) {
-      return null;
-    }
-
-    const authResponse = this.currentUser.getAuthResponse();
-    return authResponse.access_token;
+    return this.accessToken;
   }
 
   /**
@@ -136,72 +179,87 @@ class GmailAuth {
         return;
       }
 
-      // Load both auth2 and client libraries
-      gapi.load('auth2:client', {
+      if (typeof google === 'undefined') {
+        reject(
+          new Error(
+            'Google Identity Services library not loaded. Please check your internet connection.'
+          )
+        );
+        return;
+      }
+
+      // Load only the client library (auth2 is deprecated)
+      gapi.load('client', {
         callback: () => {
-          console.log('✅ Google Auth2 API loaded successfully');
+          console.log('✅ Google API client loaded successfully');
           resolve();
         },
         onerror: (error) => {
           const errorMessage =
             error?.message || error?.toString() || 'Unknown API loading error';
-          reject(new Error(`Failed to load Google Auth2: ${errorMessage}`));
+          reject(new Error(`Failed to load Google API client: ${errorMessage}`));
         },
       });
     });
   }
 
   /**
-   * Initialize Google Auth2
+   * Initialize Google Identity Services
    * @private
    */
-  async _initializeAuth() {
+  async _initializeGIS() {
     try {
-      // First initialize the client
+      // Initialize the Google API client for Gmail API calls
       await gapi.client.init({
         discoveryDocs: APP_CONFIG.DISCOVERY_DOCS,
       });
 
-      // Then initialize auth2
-      this.authInstance = await gapi.auth2.init({
+      // Initialize the Google Identity Services token client
+      // Using popup mode with proper error handling for COOP warnings
+      this.tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: APP_CONFIG.GOOGLE_CLIENT_ID,
         scope: APP_CONFIG.GMAIL_SCOPES.join(' '),
+        callback: '', // Will be set dynamically during sign-in
       });
 
-      if (!this.authInstance) {
-        throw new Error('Failed to initialize Google Auth2 instance');
+      if (!this.tokenClient) {
+        throw new Error('Failed to initialize Google Identity Services token client');
       }
-
-      // Check if user is already signed in
-      this.isSignedIn = this.authInstance.isSignedIn.get();
-      if (this.isSignedIn) {
-        this.currentUser = this.authInstance.currentUser.get();
-      }
+      
     } catch (error) {
-      const errorMessage =
-        error?.message || error?.toString() || 'Unknown authentication error';
+      // Better error message extraction with specific handling for common issues
+      let errorMessage = 'Unknown authentication error';
+      
+      if (error?.message) {
+        errorMessage = error.message;
+        
+        // Handle specific Google Auth errors - though these should be less common with GIS
+        if (errorMessage.includes('idpiframe_initialization_failed')) {
+          errorMessage = `Google Auth initialization failed. This error should be rare with the new Google Identity Services. Please check:
+1. Your domain (${window.location.origin}) is authorized in Google Console
+2. Content Security Policy allows Google domains
+3. Browser allows third-party cookies
+4. Pop-ups are enabled for this site`;
+        } else if (errorMessage.includes('popup_blocked_by_browser')) {
+          errorMessage = 'Pop-up was blocked by the browser. Please allow pop-ups for this site and try again.';
+        } else if (errorMessage.includes('access_denied')) {
+          errorMessage = 'Access denied. Please grant permissions to analyze your Gmail account.';
+        } else if (errorMessage.includes('popup_blocked_by_browser')) {
+          errorMessage = 'Pop-up was blocked by the browser. Please allow pop-ups for this site and try again.';
+        } else if (errorMessage.includes('access_denied')) {
+          errorMessage = 'Access denied. Please grant permissions to analyze your Gmail account.';
+        }
+      } else if (error?.error) {
+        errorMessage = error.error;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error) {
+        // Try to get more details from the error object
+        errorMessage = JSON.stringify(error, null, 2);
+      }
+      
       throw new Error(`Auth initialization failed: ${errorMessage}`);
     }
-  }
-
-  /**
-   * Set up authentication state listener
-   * @private
-   */
-  _setupAuthListener() {
-    if (!this.authInstance) return;
-
-    this.authInstance.isSignedIn.listen((isSignedIn) => {
-      this.isSignedIn = isSignedIn;
-
-      if (isSignedIn) {
-        this.currentUser = this.authInstance.currentUser.get();
-        this._onSignIn();
-      } else {
-        this.currentUser = null;
-        this._onSignOut();
-      }
-    });
   }
 
   /**
@@ -211,10 +269,24 @@ class GmailAuth {
   _onSignIn() {
     console.log('📧 User signed in to Gmail');
 
+    // Set the access token for gapi client
+    gapi.client.setToken({
+      access_token: this.accessToken
+    });
+
+    // Try to get and store user email for future sign-in hints
+    this.getCurrentUser().then(user => {
+      if (user && user.email) {
+        localStorage.setItem('gmail_user_hint', user.email);
+      }
+    }).catch(() => {
+      // Ignore errors in hint storage
+    });
+
     // Dispatch custom event
     window.dispatchEvent(
       new CustomEvent('gmailAuthSuccess', {
-        detail: this.getCurrentUser(),
+        detail: { isSignedIn: true, hasToken: !!this.accessToken },
       })
     );
   }
@@ -225,6 +297,9 @@ class GmailAuth {
    */
   _onSignOut() {
     console.log('👋 User signed out from Gmail');
+
+    // Clear the access token from gapi client
+    gapi.client.setToken(null);
 
     // Clear any cached data
     StorageHelper.clearCache();

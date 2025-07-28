@@ -109,8 +109,18 @@ class GmailPurgeApp {
       // Initialize Gmail authentication
       await gmailAuth.initialize();
 
+      // Initialize Gmail API
+      await gmailAPI.initialize();
+
       // Check if user is already authenticated
       this.appState.isAuthenticated = gmailAuth.isUserSignedIn();
+
+      // Update UI based on initial authentication state
+      if (this.appState.isAuthenticated) {
+        this.updateUIForAuthenticatedUser();
+      } else {
+        this.updateUIForUnauthenticatedUser();
+      }
 
       // Set up auth state listeners
       window.addEventListener('gmailAuthSuccess', (_event) => {
@@ -193,6 +203,23 @@ class GmailPurgeApp {
       this.handleKeyboardShortcuts(e);
     });
 
+    // Auth button click handler
+    const authButton = document.getElementById('auth-button');
+    if (authButton) {
+      authButton.addEventListener('click', async () => {
+        try {
+          if (gmailAuth.isUserSignedIn()) {
+            await gmailAuth.signOut();
+          } else {
+            await gmailAuth.signIn();
+          }
+        } catch (error) {
+          console.error('Auth button click error:', error);
+          this.showMessage('Authentication failed. Please try again.', 'error');
+        }
+      });
+    }
+
     console.log('Global event handlers set up');
   }
 
@@ -255,36 +282,90 @@ class GmailPurgeApp {
    * Update UI for authenticated user
    */
   updateUIForAuthenticatedUser() {
-    // Update sign-in button
-    const signInBtn = document.getElementById('sign-in-btn');
-    if (signInBtn) {
-      signInBtn.textContent = 'Sign Out';
-      signInBtn.onclick = () => this.signOut();
+    console.log('📱 Updating UI for authenticated user...');
+
+    // Hide welcome screen and show dashboard
+    const welcomeScreen = document.getElementById('welcome-screen');
+    if (welcomeScreen) {
+      welcomeScreen.style.display = 'none';
+      console.log('✅ Welcome screen hidden');
+    } else {
+      console.warn('❌ Welcome screen element not found');
+    }
+    
+    const dashboard = document.getElementById('dashboard');
+    if (dashboard) {
+      dashboard.style.display = 'block';
+      console.log('✅ Dashboard shown');
+    } else {
+      console.warn('❌ Dashboard element not found');
+    }
+
+    // Show user info container
+    const userInfo = document.getElementById('user-info');
+    if (userInfo) {
+      userInfo.style.display = 'block';
+      console.log('✅ User info container shown');
+    }
+
+    // Update auth button
+    const authButton = document.getElementById('auth-button');
+    if (authButton) {
+      authButton.innerHTML = '<i class="fas fa-sign-out-alt"></i> Sign Out';
+      authButton.className = 'btn btn-secondary';
+    }
+
+    // Show logout button if it exists
+    const logoutButton = document.getElementById('logout-button');
+    if (logoutButton) {
+      logoutButton.style.display = 'inline-flex';
     }
 
     // Enable analysis features
-    const analyzeBtn = document.getElementById('analyze-emails');
+    const analyzeBtn = document.getElementById('analyze-button');
     if (analyzeBtn) {
       analyzeBtn.disabled = false;
+      console.log('✅ Analysis button enabled');
+    } else {
+      console.warn('❌ Analysis button not found');
     }
 
     // Show user info if available
     this.displayUserInfo();
+    
+    console.log('📱 UI update for authenticated user complete');
   }
 
   /**
    * Update UI for unauthenticated user
    */
   updateUIForUnauthenticatedUser() {
-    // Update sign-in button
-    const signInBtn = document.getElementById('sign-in-btn');
-    if (signInBtn) {
-      signInBtn.textContent = 'Sign In with Gmail';
-      signInBtn.onclick = () => this.signIn();
+    // Show welcome screen and hide dashboard
+    const welcomeScreen = document.getElementById('welcome-screen');
+    if (welcomeScreen) {
+      welcomeScreen.style.display = 'block';
+    }
+    
+    const dashboard = document.getElementById('dashboard');
+    if (dashboard) {
+      dashboard.style.display = 'none';
+    }
+
+    // Update auth button
+    const authButton = document.getElementById('auth-button');
+    if (authButton) {
+      authButton.innerHTML = '<i class="fas fa-sign-in-alt"></i> Connect Gmail';
+      authButton.className = 'btn btn-primary';
+    }
+
+    // Hide logout button if it exists
+    const logoutButton = document.getElementById('logout-button');
+    if (logoutButton) {
+      logoutButton.style.display = 'none';
     }
 
     // Disable analysis features
-    const analyzeBtn = document.getElementById('analyze-emails');
+    const analyzeBtn = document.getElementById('analyze-button');
     if (analyzeBtn) {
       analyzeBtn.disabled = true;
     }
@@ -298,23 +379,49 @@ class GmailPurgeApp {
    */
   async displayUserInfo() {
     try {
-      const userInfo = gmailAuth.getCurrentUser();
+      const userInfo = await gmailAuth.getCurrentUser();
       if (userInfo) {
         const userElement = document.getElementById('user-info');
         if (userElement) {
           userElement.innerHTML = `
             <div class="user-display">
-              <img src="${userInfo.picture}" alt="Profile" class="user-avatar">
+              <div class="user-avatar">
+                <i class="fas fa-user-circle" style="font-size: 32px; color: #5f6368;"></i>
+              </div>
               <div class="user-details">
-                <div class="user-name">${userInfo.name}</div>
                 <div class="user-email">${userInfo.email}</div>
+                <div class="user-stats">
+                  ${userInfo.messagesTotal ? `${userInfo.messagesTotal.toLocaleString()} messages` : 'Loading...'}
+                </div>
               </div>
             </div>
           `;
         }
+
+        // Also update the user name element if it exists
+        const userNameElement = document.getElementById('user-name');
+        if (userNameElement) {
+          userNameElement.textContent = userInfo.email;
+        }
       }
     } catch (error) {
       console.error('Failed to get user info:', error);
+      
+      // Show fallback user info
+      const userElement = document.getElementById('user-info');
+      if (userElement) {
+        userElement.innerHTML = `
+          <div class="user-display">
+            <div class="user-avatar">
+              <i class="fas fa-user-circle" style="font-size: 32px; color: #5f6368;"></i>
+            </div>
+            <div class="user-details">
+              <div class="user-email">Gmail User</div>
+              <div class="user-stats">Authenticated</div>
+            </div>
+          </div>
+        `;
+      }
     }
   }
 
@@ -580,16 +687,70 @@ class GmailPurgeApp {
   }
 
   /**
-   * Show info message
+   * Show info message with fallback for component availability
    * @param {string} message - Message text
    * @param {string} type - Message type
    */
   showMessage(message, type = 'info') {
-    if (this.components.dashboard) {
+    // Try to use dashboard component first
+    if (this.components.dashboard && typeof this.components.dashboard.showMessage === 'function') {
       this.components.dashboard.showMessage(message, type);
+    } else if (window.dashboard && typeof window.dashboard.showMessage === 'function') {
+      // Fallback to global dashboard
+      window.dashboard.showMessage(message, type);
     } else {
-      console.log(`${type.toUpperCase()}: ${message}`);
+      // Final fallback - create our own message display
+      this._showFallbackMessage(message, type);
     }
+  }
+
+  /**
+   * Fallback message display when dashboard component is not available
+   * @private
+   */
+  _showFallbackMessage(message, type = 'info') {
+    // Create temporary message element
+    const messageEl = document.createElement('div');
+    messageEl.className = `message message-${type}`;
+    messageEl.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 12px 16px;
+      background: ${type === 'success' ? '#d4edda' : type === 'error' ? '#f8d7da' : type === 'warning' ? '#fff3cd' : '#d1ecf1'};
+      color: ${type === 'success' ? '#155724' : type === 'error' ? '#721c24' : type === 'warning' ? '#856404' : '#0c5460'};
+      border: 1px solid ${type === 'success' ? '#c3e6cb' : type === 'error' ? '#f5c6cb' : type === 'warning' ? '#ffeaa7' : '#bee5eb'};
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      z-index: 10000;
+      max-width: 300px;
+      font-family: Inter, sans-serif;
+      font-size: 14px;
+    `;
+    
+    messageEl.innerHTML = `
+      <span>${message}</span>
+      <button onclick="this.parentElement.remove()" style="
+        background: none;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        margin-left: 8px;
+        color: inherit;
+      ">×</button>
+    `;
+
+    document.body.appendChild(messageEl);
+
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+      if (messageEl.parentElement) {
+        messageEl.remove();
+      }
+    }, 5000);
+
+    // Also log to console
+    console.log(`${type.toUpperCase()}: ${message}`);
   }
 
   /**

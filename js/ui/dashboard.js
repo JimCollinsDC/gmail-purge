@@ -35,7 +35,7 @@ class Dashboard {
       statusText: document.getElementById('status-text'),
 
       // Analysis controls
-      analyzeButton: document.getElementById('analyze-emails'),
+      analyzeButton: document.getElementById('analyze-button'),
       presetSelect: document.getElementById('analysis-preset'),
       refreshButton: document.getElementById('refresh-data'),
 
@@ -146,14 +146,14 @@ class Dashboard {
    */
   async fetchEmailsByPreset() {
     const presets = {
-      all: { query: '', maxResults: 1000 },
-      'recent-month': { query: 'newer_than:1m', maxResults: 1000 },
-      'recent-year': { query: 'newer_than:1y', maxResults: 2000 },
-      'large-emails': { query: 'larger:5M', maxResults: 500 },
-      'with-attachments': { query: 'has:attachment', maxResults: 1000 },
-      promotions: { query: 'category:promotions', maxResults: 1000 },
-      social: { query: 'category:social', maxResults: 1000 },
-      unread: { query: 'is:unread', maxResults: 500 },
+      all: { query: '', maxResults: 100 },
+      'recent-month': { query: 'newer_than:1m', maxResults: 100 },
+      'recent-year': { query: 'newer_than:1y', maxResults: 100 },
+      'large-emails': { query: 'larger:5M', maxResults: 100 },
+      'with-attachments': { query: 'has:attachment', maxResults: 100 },
+      promotions: { query: 'category:promotions', maxResults: 100 },
+      social: { query: 'category:social', maxResults: 100 },
+      unread: { query: 'is:unread', maxResults: 100 },
     };
 
     const preset = presets[this.selectedPreset] || presets.all;
@@ -163,11 +163,19 @@ class Dashboard {
       this.updateProgress(percentage, `Fetching emails... ${current}/${total}`);
     };
 
-    return GmailAPI.fetchEmails(
-      preset.query,
-      preset.maxResults,
-      updateProgress
-    );
+    // Use the global gmailAPI instance to get all messages
+    const messages = await gmailAPI.getAllMessages({
+      maxPages: preset.maxResults ? Math.ceil(preset.maxResults / 100) : 50,
+      query: preset.query
+    });
+
+    // Get detailed message information for analysis
+    if (messages.length > 0) {
+      const messageIds = messages.slice(0, preset.maxResults || 5000).map(m => m.id);
+      return await gmailAPI.getMessageDetails(messageIds, updateProgress);
+    }
+
+    return [];
   }
 
   /**
@@ -687,8 +695,9 @@ class Dashboard {
 
 // Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  // eslint-disable-next-line no-unused-vars
   const dashboard = new Dashboard();
+  // Make dashboard available globally for app coordination
+  window.dashboard = dashboard;
 });
 
 // Export for use in other modules
